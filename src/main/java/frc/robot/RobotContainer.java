@@ -6,7 +6,8 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 // import frc.robot.subsystems.Intake;
-
+import frc.robot.subsystems.Shooter;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /**
@@ -20,15 +21,14 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
  */
 public class RobotContainer {
     // The robot's subsystems and commands are defined here...
-    // private final Intake m_intakMechanism = new Mechanism();
-
+    private final Shooter m_shooter = new Shooter();
+    public static double shootingSpeed = .5;
     // Replace with CommandPS4Controller or CommandJoystick if needed
     private final CommandXboxController m_driverController = new CommandXboxController(
             OperatorConstants.kDriverControllerPort);
     private final CommandXboxController m_secondController = new CommandXboxController(1);
 
-    //private final Telemetry logger = new Telemetry(MaxSpeed);
-
+    // private final Telemetry logger = new Telemetry(MaxSpeed);
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -40,7 +40,10 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'configureBindings'");
+        m_driverController.rightTrigger().whileTrue(m_shooter.openLoopShootingCommand(shootingSpeed));
+
+        m_driverController.povDown().onTrue(new InstantCommand(() -> shootingSpeed = shootingSpeed - .01));
+        m_driverController.povUp().onTrue(new InstantCommand(() -> shootingSpeed = shootingSpeed + .01));
+
     }
 }
