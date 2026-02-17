@@ -5,8 +5,21 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.Shoot;
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Feeder;
 // import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -22,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 public class RobotContainer {
     // The robot's subsystems and commands are defined here...
     private final Shooter m_shooter = new Shooter();
+    private final Feeder m_feeder = new Feeder();
     public static double shootingSpeed = .5;
     // Replace with CommandPS4Controller or CommandJoystick if needed
     private final CommandXboxController m_driverController = new CommandXboxController(
@@ -29,6 +43,19 @@ public class RobotContainer {
     private final CommandXboxController m_secondController = new CommandXboxController(1);
 
     // private final Telemetry logger = new Telemetry(MaxSpeed);
+
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .55; // TODO we changed value
+                                                                                        // kSpeedAt12Volts desired top
+                                                                                        // speed
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
+                                                                                      // max
+
+    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+            .withDeadband(MaxSpeed * 0.15).withRotationalDeadband(MaxAngularRate * 0.15) // Add a 10% deadband
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -40,10 +67,19 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        m_driverController.rightTrigger().whileTrue(m_shooter.openLoopShootingCommand(shootingSpeed));
+        drivetrain.setDefaultCommand(
+                drivetrain.applyRequest(() -> drive.withVelocityX(MaxSpeed * -m_driverController.getLeftY())
+                        .withVelocityY(MaxSpeed * -m_driverController.getLeftX())
+                        .withRotationalRate(-m_driverController.getRightX())));
 
-        m_driverController.povDown().onTrue(new InstantCommand(() -> shootingSpeed = shootingSpeed - .01));
-        m_driverController.povUp().onTrue(new InstantCommand(() -> shootingSpeed = shootingSpeed + .01));
+        m_driverController.a().onTrue(drivetrain.runOnce(() -> drivetrain.setControl(brake)));
+        m_driverController.rightBumper().and(m_driverController.leftBumper())
+                .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
+
+        m_driverController.leftTrigger().whileTrue(new Shoot(m_shooter, m_feeder));
+
+        m_driverController.povDown().onTrue(new InstantCommand(() -> shootingSpeed = shootingSpeed - 10));
+        m_driverController.povUp().onTrue(new InstantCommand(() -> shootingSpeed = shootingSpeed + 10));
 
     }
 }
