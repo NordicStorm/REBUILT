@@ -32,9 +32,9 @@ public class Robot extends TimedRobot {
      */
     public Robot() {
         // Start logging
-        DataLogManager.start();
-        DriverStation.startDataLog(DataLogManager.getLog());
-        SignalLogger.setPath("/media/sda1/ctre-logs/");
+        //DataLogManager.start();
+        //DriverStation.startDataLog(DataLogManager.getLog());
+        //SignalLogger.setPath("/media/sda1/ctre-logs/");
 
         // Instantiate our RobotContainer. This will perform all our button bindings,
         // and put our autonomous chooser on the dashboard.

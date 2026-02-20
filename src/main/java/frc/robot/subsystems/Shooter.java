@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,7 +29,9 @@ public class Shooter extends SubsystemBase {
     // Hardware
     //
     private final TalonFXConfiguration m_shooterConfig = new TalonFXConfiguration();
-    private final TalonFX m_shooter = new TalonFX(MechanismConstants.kShooter1ID, "CANivore");
+    private final TalonFX m_shooter = new TalonFX(11, "rio");
+    final VelocityVoltage velocityRequest = new VelocityVoltage(0);
+
 
     //
     // State
@@ -41,6 +44,7 @@ public class Shooter extends SubsystemBase {
     //
 
     public Shooter() {
+        SmartDashboard.putNumber("Shooter RPS Request", 0);
 
         /*
          * Kg - output to overcome gravity (output)
@@ -59,22 +63,22 @@ public class Shooter extends SubsystemBase {
         shooterSlot0Configs.kI = 0; // no output for integrated error
         shooterSlot0Configs.kD = 0; // no output for error derivative
 
-        m_shooter.getConfigurator().apply(shooterSlot0Configs);
-
+        m_shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         m_shooterConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         m_shooterConfig.CurrentLimits.SupplyCurrentLimit = 80;
 
         m_shooter.getConfigurator().apply(m_shooterConfig);
+        m_shooter.getConfigurator().apply(shooterSlot0Configs);
       
         m_shooter.optimizeBusUtilization();
     }
 
-    public void setSpeed(double speed) {
-        m_speed = speed;
+    public void setRPM(double RPM) {
+        m_speed = RPM/60;
     }
 
     private void setShooterRPM(double rpm) {
-        m_shooter.setControl(new VelocityVoltage(rpm).withSlot(0));
+        m_shooter.setControl(velocityRequest.withVelocity(rpm));
     }
 
     public Command shoot(double rpm) {
@@ -82,13 +86,17 @@ public class Shooter extends SubsystemBase {
     }
 
     public void stop() {
-        setShooterRPM(0);
+        setRPM(0);
     }
 
-    @Override
+    public void setVoltage(double v) {
+        m_shooter.setVoltage(v);
+    }
+
     public void periodic() {
-        //m_shooter.set(m_speed);
-        SmartDashboard.putNumber("Velocity from Encoder", m_shooter.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Shooting Value", RobotContainer.shootingSpeed);
+        setShooterRPM(m_speed);
+        SmartDashboard.putNumber("Shooter Velocity", m_shooter.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Shooting Value", m_speed);
+        SmartDashboard.putNumber("Requested PID", m_shooter.getMotorVoltage().getValueAsDouble());
     }
 }
