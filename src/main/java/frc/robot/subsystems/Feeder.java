@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -10,20 +11,18 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.MechanismConstants;
-import frc.robot.RobotContainer;
+import frc.robot.Constants;
+
 
 public class Feeder extends SubsystemBase {
-
-    private enum ControlMode {
-        kStop, kPID
-    }
 
     private double m_speed = 0;
 
     private final TalonFXConfiguration m_feederConfig = new TalonFXConfiguration();
-    private final TalonFX m_feeder = new TalonFX(10, "rio");
+    public final TalonFX m_feeder = new TalonFX(Constants.MechanismConstants.kFeederMotorID, "rio");
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
+    final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
+
 
 
     public Feeder() {
@@ -38,7 +37,7 @@ public class Feeder extends SubsystemBase {
 
         m_feederConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         m_feederConfig.CurrentLimits.SupplyCurrentLimit = 80;
-        m_feederConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        m_feederConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
         m_feeder.getConfigurator().apply(m_feederConfig);
         m_feeder.getConfigurator().apply(feederSlot0Configs);
@@ -51,7 +50,11 @@ public class Feeder extends SubsystemBase {
     }
 
     private void setFeederRPM(double rpm) {
-        m_feeder.setControl(velocityRequest.withVelocity(rpm));
+        if (rpm == 0) {
+            m_feeder.set(rpm);
+        } else {
+            m_feeder.setControl(velocityRequest.withVelocity(rpm));
+        }
     }
 
     public Command feed(double rpm) {

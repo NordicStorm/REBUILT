@@ -27,7 +27,7 @@ public class Shoot extends Command{
     public void execute() {
         double shooterRPM = SmartDashboard.getNumber("Shooter RPS Request", 0);
         double feederRPM = SmartDashboard.getNumber("Feeder RPS Request", 0);
-        m_feeder.setRPM(feederRPM);
+        m_feeder.setRPM(shooterRPM);
         m_shooter.setRPM(shooterRPM);
     }
 

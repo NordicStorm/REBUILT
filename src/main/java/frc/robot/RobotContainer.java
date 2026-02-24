@@ -1,6 +1,6 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+// Intake deploy x44
+// Intake motor x44
+// Roller floor x60
 
 package frc.robot;
 
@@ -9,6 +9,7 @@ import frc.robot.commands.Shoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Feeder;
+import frc.robot.subsystems.PhotonVision;
 // import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
@@ -16,11 +17,14 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /**
@@ -36,6 +40,8 @@ public class RobotContainer {
     // The robot's subsystems and commands are defined here...
     private final Shooter m_shooter = new Shooter();
     private final Feeder m_feeder = new Feeder();
+    public final Orchestra music = new Orchestra();
+    private final PhotonVision fuelCamera = new PhotonVision();
     public static double shootingSpeed = .5;
     // Replace with CommandPS4Controller or CommandJoystick if needed
     private final CommandXboxController m_driverController = new CommandXboxController(
@@ -50,10 +56,10 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
                                                                                       // max
 
-    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    public final static CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDeadband(MaxSpeed * 0.2).withRotationalDeadband(MaxAngularRate * 0.2) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
 
@@ -63,7 +69,13 @@ public class RobotContainer {
     public RobotContainer() {
         // Configure the trigger bindings
         configureBindings();
-
+        music.loadMusic("output.chrp");
+        music.addInstrument(m_feeder.m_feeder);
+        music.addInstrument(m_shooter.m_shooter);
+        for (int i = 0; i < 4; i++) {
+            music.addInstrument(drivetrain.getModule(i).getDriveMotor());
+            music.addInstrument(drivetrain.getModule(i).getSteerMotor());
+        }
     }
 
     private void configureBindings() {
@@ -77,6 +89,8 @@ public class RobotContainer {
                 .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
 
         m_driverController.leftTrigger().whileTrue(new Shoot(m_shooter, m_feeder));
+        m_driverController.b().onTrue(new InstantCommand(() -> music.play(), m_feeder, m_shooter));
+        m_driverController.b().onFalse(new InstantCommand(() -> music.stop(), m_feeder, m_shooter));
 
         m_driverController.povDown().onTrue(new InstantCommand(() -> shootingSpeed = shootingSpeed - 10));
         m_driverController.povUp().onTrue(new InstantCommand(() -> shootingSpeed = shootingSpeed + 10));
