@@ -20,7 +20,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class TargetClusterer {
 
     public TargetClusterer() {
-        /* static utility */ }
+    }
 
     /**
      * DBSCAN-like clustering using angular Euclidean distance between pitch/yaw.
@@ -33,7 +33,7 @@ public class TargetClusterer {
      *         are returned as
      *         single-member clusters if minPts==1, otherwise they are omitted.
      */
-    public static List<List<PhotonTrackedTarget>> clusterByAngularDistance(List<PhotonTrackedTarget> pts, double epsDeg,
+    public static List<Cluster> clusterByAngularDistance(List<PhotonTrackedTarget> pts, double epsDeg,
             int minPts) {
         return clusterByAngularAndArea(pts, epsDeg, minPts, Double.POSITIVE_INFINITY);
     }
@@ -53,7 +53,7 @@ public class TargetClusterer {
      *                      Double.POSITIVE_INFINITY to ignore
      * @return clusters as list of lists
      */
-    public static List<List<PhotonTrackedTarget>> clusterByAngularAndArea(List<PhotonTrackedTarget> pts, double epsDeg,
+    public static List<Cluster> clusterByAngularAndArea(List<PhotonTrackedTarget> pts, double epsDeg,
             int minPts, double areaTolerance) {
         if (pts == null || pts.isEmpty())
             return Collections.emptyList();
@@ -63,7 +63,7 @@ public class TargetClusterer {
         for (int i = 0; i < n; i++)
             clusterId[i] = -1; // -1 = unassigned
 
-        List<List<PhotonTrackedTarget>> clusters = new ArrayList<>();
+        List<Cluster> clusters = new ArrayList<>();
         int nextCluster = 0;
 
         for (int i = 0; i < n; i++) {
@@ -72,24 +72,26 @@ public class TargetClusterer {
             visited[i] = true;
             List<Integer> neighbors = regionQuery(pts, i, epsDeg, areaTolerance);
             if (neighbors.size() < minPts) {
-                // mark as noise by leaving clusterId as -1 (we'll optionally include later)
+                clusterId[i] = -1;
                 continue;
+            } else {
+
             }
             // create new cluster
-            List<PhotonTrackedTarget> cluster = new ArrayList<>();
+            Cluster cluster = new Cluster();
+            cluster.addIDs(neighbors);
             clusters.add(cluster);
             expandCluster(pts, i, neighbors, cluster, visited, clusterId, nextCluster, epsDeg, minPts, areaTolerance);
             nextCluster++;
         }
 
-        // Optionally include noise points as one-member clusters if minPts == 1 or user
-        // expects all points
-        // For now, include any unassigned points as singletons so caller sees all
-        // detections.
+        // Include any unassigned (noise) points as single-member clusters so caller sees
+        // all detections (keeps behavior consistent with the original implementation).
         for (int i = 0; i < n; i++) {
             if (clusterId[i] == -1) {
-                List<PhotonTrackedTarget> single = new ArrayList<>();
-                single.add(pts.get(i));
+                Cluster single = new Cluster();
+                single.addFuel(pts.get(i));
+                single.addIDs(List.of(i));
                 clusters.add(single);
             }
         }
@@ -98,11 +100,11 @@ public class TargetClusterer {
     }
 
     private static void expandCluster(List<PhotonTrackedTarget> pts, int idx, List<Integer> neighbors,
-            List<PhotonTrackedTarget> cluster,
+            Cluster cluster,
             boolean[] visited, int[] clusterId, int clusterIndex,
             double epsDeg, int minPts, double areaTolerance) {
         // add idx
-        cluster.add(pts.get(idx));
+        cluster.addFuel(pts.get(idx));
         clusterId[idx] = clusterIndex;
 
         // iterate over neighbors
@@ -119,7 +121,7 @@ public class TargetClusterer {
                 }
             }
             if (clusterId[nid] == -1) {
-                cluster.add(pts.get(nid));
+                cluster.addFuel(pts.get(nid));
                 clusterId[nid] = clusterIndex;
             }
         }
@@ -135,7 +137,7 @@ public class TargetClusterer {
             PhotonTrackedTarget o = pts.get(i);
             double d = angularDistanceDeg(t, o);
             if (d <= epsDeg) {
-                if (areaTolerance == Double.POSITIVE_INFINITY || areaSimilar(t.area, o.area, areaTolerance)) {
+                if (areaTolerance == Double.POSITIVE_INFINITY || areaSimilar(t.getArea(), o.getArea(), areaTolerance)) {
                     neighbors.add(i);
                 }
             }

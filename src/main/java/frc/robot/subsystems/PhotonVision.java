@@ -11,6 +11,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.vision.Cluster;
 import frc.robot.vision.TargetClusterer;
 
 public class PhotonVision extends SubsystemBase {
@@ -37,14 +38,17 @@ public class PhotonVision extends SubsystemBase {
             if (result.hasTargets()) {
                 List<PhotonTrackedTarget> pts = result.getTargets();
 
-                double eps = 30; // degrees
-                int minPts = 5; // minimum points to form a cluster
-                double areaTol = 1.3; // 30% allowed difference
+                double eps = 7.5; // degrees
+                int minPts = 3; // minimum points to form a cluster
+                double areaTol = 1.75; // 50% allowed difference
+               
 
-                List<List<PhotonTrackedTarget>> clusters = TargetClusterer.clusterByAngularAndArea(pts, eps, minPts, areaTol);
+                List<Cluster> clusters = TargetClusterer.clusterByAngularAndArea(pts, eps, minPts, areaTol);
                 SmartDashboard.putString("PhotonVision", String.format("Found %d clusters", clusters.size()));
                 for (int i = 0; i < clusters.size(); i++) {
-                    //SmartDashboard.putString("PhotonVisionCluster: " + i, clusters.get(i).toString());
+                    Cluster cluster = clusters.get(i);
+                    SmartDashboard.putString("Bounding Box: ", cluster.getCorners().toString());
+                    SmartDashboard.putString("PhotonVisionCluster: " + i, "Size: " + cluster.getSize() + " IDs: " + cluster.getIDs().toString());
                 }
             }
         }
