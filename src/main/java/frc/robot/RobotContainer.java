@@ -6,9 +6,11 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Shoot;
+import frc.robot.commands.doIntake;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Feeder;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.PhotonVision;
 // import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
@@ -38,10 +40,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
  */
 public class RobotContainer {
     // The robot's subsystems and commands are defined here...
-    private final Shooter m_shooter = new Shooter();
-    private final Feeder m_feeder = new Feeder();
+    // private final Shooter m_shooter = new Shooter();
+    // private final Feeder m_feeder = new Feeder();
+    private final Intake m_intake = new Intake();
     public final Orchestra music = new Orchestra();
-    private final PhotonVision fuelCamera = new PhotonVision();
+    // private final PhotonVision fuelCamera = new PhotonVision();
     public static double shootingSpeed = .5;
     // Replace with CommandPS4Controller or CommandJoystick if needed
     private final CommandXboxController m_driverController = new CommandXboxController(
@@ -70,8 +73,8 @@ public class RobotContainer {
         // Configure the trigger bindings
         configureBindings();
         music.loadMusic("output.chrp");
-        music.addInstrument(m_feeder.m_feeder);
-        music.addInstrument(m_shooter.m_shooter);
+        // music.addInstrument(m_feeder.m_feeder);
+        // music.addInstrument(m_shooter.m_shooter);
         for (int i = 0; i < 4; i++) {
             music.addInstrument(drivetrain.getModule(i).getDriveMotor());
             music.addInstrument(drivetrain.getModule(i).getSteerMotor());
@@ -88,12 +91,10 @@ public class RobotContainer {
         m_driverController.rightBumper().and(m_driverController.leftBumper())
                 .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
 
-        m_driverController.leftTrigger().whileTrue(new Shoot(m_shooter, m_feeder));
-        m_driverController.b().onTrue(new InstantCommand(() -> music.play(), m_feeder, m_shooter));
-        m_driverController.b().onFalse(new InstantCommand(() -> music.stop(), m_feeder, m_shooter));
+        m_driverController.leftTrigger().onTrue(new InstantCommand(() -> m_intake.switchPosition(), m_intake));
+        m_driverController.rightTrigger().whileTrue(new doIntake(m_intake));
 
-        m_driverController.povDown().onTrue(new InstantCommand(() -> shootingSpeed = shootingSpeed - 10));
-        m_driverController.povUp().onTrue(new InstantCommand(() -> shootingSpeed = shootingSpeed + 10));
-
+        m_driverController.b().onTrue(new InstantCommand(() -> music.play()));
+        m_driverController.b().onFalse(new InstantCommand(() -> music.stop()));
     }
 }

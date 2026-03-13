@@ -37,14 +37,14 @@ public class TemporalClusterSmoother {
         public final double pitch; // degrees
         public final double yaw;   // degrees
         public final double area;
-        public final List<Integer> ids; // source detection ids that contributed most recently
+        public final int size; // number of detections in the cluster this frame
 
-        public SmoothedCluster(int id, double pitch, double yaw, double area, List<Integer> ids) {
+        public SmoothedCluster(int id, double pitch, double yaw, double area, int size) {
             this.id = id;
             this.pitch = pitch;
             this.yaw = yaw;
             this.area = area;
-            this.ids = (ids == null) ? List.of() : new ArrayList<>(ids);
+            this.size = size;
         }
     }
 
@@ -54,7 +54,7 @@ public class TemporalClusterSmoother {
         double yaw;   // degrees (smoothed)
         double area;  // smoothed area
         int missedFrames;
-        List<Integer> ids = new ArrayList<>();
+        int size = 0;
     }
 
     /**
@@ -65,6 +65,14 @@ public class TemporalClusterSmoother {
         if (clusters == null) clusters = List.of();
 
         int n = clusters.size();
+        // If no clusters this frame, return current active tracks as smoothed output
+        if (n == 0) {
+            List<SmoothedCluster> outEmpty = new ArrayList<>();
+            for (Track tr : tracks) {
+                outEmpty.add(new SmoothedCluster(tr.id, tr.pitch, tr.yaw, tr.area, tr.size));
+            }
+            return outEmpty;
+        }
         boolean[] clusterAssigned = new boolean[n];
         Set<Track> matchedTracks = new HashSet<>();
 
@@ -72,19 +80,20 @@ public class TemporalClusterSmoother {
         double[] measPitch = new double[n];
         double[] measYaw = new double[n];
         double[] measArea = new double[n];
-        List<List<Integer>> measIDs = new ArrayList<>();
+        int[] measSize = new int[n];
         for (int i = 0; i < n; i++) {
             Cluster c = clusters.get(i);
             double p = c.getWeightedMeanPitch();
             double y = c.getWeightedMeanYaw();
             double a = c.getAverageArea();
             if (Double.isNaN(p)) p = c.getMeanPitch();
+
             if (Double.isNaN(y)) y = c.getMeanYaw();
             if (Double.isNaN(a)) a = 0.0;
             measPitch[i] = p;
             measYaw[i] = y;
             measArea[i] = a;
-            measIDs.add(new ArrayList<>(c.getIDs()));
+            measSize[i] = c.getSize();
         }
 
         // Greedy matching: for each cluster, find the nearest existing track
@@ -116,7 +125,7 @@ public class TemporalClusterSmoother {
                 tr.yaw = Math.toDegrees(Math.atan2(newY, newX));
                 tr.area = alpha * measArea[ci] + (1.0 - alpha) * tr.area;
                 tr.missedFrames = 0;
-                tr.ids = measIDs.get(ci);
+                tr.size = measSize[ci];
                 clusterAssigned[ci] = true;
                 trackTaken[bestT] = true;
                 matchedTracks.add(tr);
@@ -132,7 +141,7 @@ public class TemporalClusterSmoother {
             tr.yaw = measYaw[ci];
             tr.area = measArea[ci];
             tr.missedFrames = 0;
-            tr.ids = measIDs.get(ci);
+            tr.size = measSize[ci];
             tracks.add(tr);
             matchedTracks.add(tr);
         }
@@ -150,7 +159,7 @@ public class TemporalClusterSmoother {
         // Build result list from active tracks
         List<SmoothedCluster> out = new ArrayList<>();
         for (Track tr : tracks) {
-            out.add(new SmoothedCluster(tr.id, tr.pitch, tr.yaw, tr.area, tr.ids));
+            out.add(new SmoothedCluster(tr.id, tr.pitch, tr.yaw, tr.area, tr.size));
         }
         return out;
     }

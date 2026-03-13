@@ -6,22 +6,16 @@ import java.util.List;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
+
 public class Cluster {
 
     private List<PhotonTrackedTarget> fuel;
     private List<TargetCorner> corners;
-    private ArrayList<Integer> ids;
     private double area;
     private double pitch;
     private double yaw;
 
-    public Cluster(List<PhotonTrackedTarget> fuelList, int[] ids) {
-        this.ids = new ArrayList<>();
-        if (ids != null) {
-            for (int id : ids) {
-                this.ids.add(id);
-            }
-        }
+    public Cluster(List<PhotonTrackedTarget> fuelList) {
         this.fuel = (fuelList != null) ? new ArrayList<>(fuelList) : new ArrayList<>();
         this.corners = this.getClusterCorners();
         this.area = calculateArea();
@@ -30,7 +24,7 @@ public class Cluster {
     }
 
     public Cluster() {
-        this(null, new int[]{});
+        this(null);
     }
 
     private void updateCluster() {
@@ -52,12 +46,6 @@ public class Cluster {
         }
     }
 
-    public void addIDs(List<Integer> neighbors) {
-        for (int i : neighbors) {
-            this.ids.add(i);
-        }
-    }
-
     private double calculateArea() {
         if (corners == null || corners.size() != 4) {
             return 0.0; // Not a valid rectangle
@@ -67,21 +55,18 @@ public class Cluster {
         return width * height;
     }
 
-    
-
     private List<TargetCorner> getClusterCorners() {
-        if (this.fuel == null || this.fuel.isEmpty())
-            return new ArrayList<>();
-
         double left = Double.POSITIVE_INFINITY, down = Double.POSITIVE_INFINITY;
         double right = Double.NEGATIVE_INFINITY, up = Double.NEGATIVE_INFINITY;
 
         for (PhotonTrackedTarget t : fuel) {
-            if (t == null)
+            if (t == null) {
                 continue;
-            var detected = t.getDetectedCorners();
-            if (detected == null)
+            }
+            var detected = t.getMinAreaRectCorners();
+            if (detected == null) {
                 continue;
+            }
             for (TargetCorner c : detected) {
                 if (c == null)
                     continue;
@@ -116,7 +101,7 @@ public class Cluster {
      * returns an empty list.
      */
     public List<TargetCorner> getCorners() {
-        return corners;
+        return getClusterCorners();
     }
 
     public int getSize() {
@@ -128,14 +113,17 @@ public class Cluster {
      */
     public double getMeanPitch() {
         int n = getSize();
-        if (n == 0) return Double.NaN;
+        if (n == 0)
+            return Double.NaN;
         double sum = 0.0;
-        for (PhotonTrackedTarget t : fuel) sum += t.getPitch();
+        for (PhotonTrackedTarget t : fuel)
+            sum += t.getPitch();
         return sum / n;
     }
 
     /**
-     * Area-weighted mean of the pitch values. Falls back to arithmetic mean if all areas are <=0.
+     * Area-weighted mean of the pitch values. Falls back to arithmetic mean if all
+     * areas are <=0.
      */
     public double getWeightedMeanPitch() {
         double totalW = 0.0, sum = 0.0;
@@ -144,16 +132,19 @@ public class Cluster {
             sum += t.getPitch() * w;
             totalW += w;
         }
-        if (totalW == 0.0) return getMeanPitch();
+        if (totalW == 0.0)
+            return getMeanPitch();
         return sum / totalW;
     }
 
     /**
-     * Circular arithmetic mean of yaw (degrees), handling wrap-around. Returns NaN for empty cluster.
+     * Circular arithmetic mean of yaw (degrees), handling wrap-around. Returns NaN
+     * for empty cluster.
      */
     public double getMeanYaw() {
         int n = getSize();
-        if (n == 0) return Double.NaN;
+        if (n == 0)
+            return Double.NaN;
         double sumX = 0.0, sumY = 0.0;
         for (PhotonTrackedTarget t : fuel) {
             double r = Math.toRadians(t.getYaw());
@@ -164,11 +155,13 @@ public class Cluster {
     }
 
     /**
-     * Area-weighted circular mean of yaw (degrees). Falls back to unweighted mean if all areas <=0.
+     * Area-weighted circular mean of yaw (degrees). Falls back to unweighted mean
+     * if all areas <=0.
      */
     public double getWeightedMeanYaw() {
         int n = getSize();
-        if (n == 0) return Double.NaN;
+        if (n == 0)
+            return Double.NaN;
         double sumX = 0.0, sumY = 0.0, totalW = 0.0;
         for (PhotonTrackedTarget t : fuel) {
             double w = Math.max(0.0, t.getArea());
@@ -177,7 +170,8 @@ public class Cluster {
             sumY += w * Math.sin(r);
             totalW += w;
         }
-        if (totalW == 0.0) return getMeanYaw();
+        if (totalW == 0.0)
+            return getMeanYaw();
         return Math.toDegrees(Math.atan2(sumY, sumX));
     }
 
@@ -186,7 +180,8 @@ public class Cluster {
      */
     public double getSumArea() {
         double s = 0.0;
-        for (PhotonTrackedTarget t : fuel) s += Math.max(0.0, t.getArea());
+        for (PhotonTrackedTarget t : fuel)
+            s += Math.max(0.0, t.getArea());
         return s;
     }
 
@@ -203,7 +198,8 @@ public class Cluster {
      */
     public double getMaxArea() {
         double m = 0.0;
-        for (PhotonTrackedTarget t : fuel) m = Math.max(m, t.getArea());
+        for (PhotonTrackedTarget t : fuel)
+            m = Math.max(m, t.getArea());
         return m;
     }
 
@@ -212,10 +208,6 @@ public class Cluster {
      */
     public List<PhotonTrackedTarget> getTargets() {
         return (fuel == null) ? List.of() : new ArrayList<>(fuel);
-    }
-
-    public ArrayList<Integer> getIDs() {
-        return ids;
     }
 
     public double getArea() {
@@ -231,7 +223,7 @@ public class Cluster {
     }
 
     public String toString() {
-        return String.format("Cluster with %d fuel, area %.2f, pitch, yaw (%.2f, %.2f), IDs: %s",
-                getSize(), getArea(), getPitch(), getYaw(), ids.toString());
+        return String.format("Cluster with %d fuel, area %.2f, pitch, yaw (%.2f, %.2f)",
+                getSize(), getArea(), getPitch(), getYaw());
     }
 }

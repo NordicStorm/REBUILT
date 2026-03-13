@@ -77,23 +77,11 @@ public class TargetClusterer {
             } else {
 
             }
-            // create new cluster
+            // create new cluster (do not pre-add neighbor ids — ownership is assigned during expandCluster)
             Cluster cluster = new Cluster();
-            cluster.addIDs(neighbors);
             clusters.add(cluster);
             expandCluster(pts, i, neighbors, cluster, visited, clusterId, nextCluster, epsDeg, minPts, areaTolerance);
             nextCluster++;
-        }
-
-        // Include any unassigned (noise) points as single-member clusters so caller sees
-        // all detections (keeps behavior consistent with the original implementation).
-        for (int i = 0; i < n; i++) {
-            if (clusterId[i] == -1) {
-                Cluster single = new Cluster();
-                single.addFuel(pts.get(i));
-                single.addIDs(List.of(i));
-                clusters.add(single);
-            }
         }
 
         return clusters;
@@ -103,7 +91,6 @@ public class TargetClusterer {
             Cluster cluster,
             boolean[] visited, int[] clusterId, int clusterIndex,
             double epsDeg, int minPts, double areaTolerance) {
-        // add idx
         cluster.addFuel(pts.get(idx));
         clusterId[idx] = clusterIndex;
 

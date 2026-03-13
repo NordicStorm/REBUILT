@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.vision.Cluster;
 import frc.robot.vision.TargetClusterer;
+import frc.robot.vision.TemporalClusterSmoother;
 
 public class PhotonVision extends SubsystemBase {
 
@@ -21,9 +22,12 @@ public class PhotonVision extends SubsystemBase {
     private static final double CAMERA_PITCH_RADIANS = Units.degreesToRadians(0); // TODO
 
     private List<PhotonPipelineResult> fuel = new ArrayList<PhotonPipelineResult>();
+    private final TemporalClusterSmoother clusterSmoother;
 
     public PhotonVision() {
         fuelCamera = new PhotonCamera("FuelCam");
+        // Initialize temporal smoother: alpha=0.3, matchThresholdDeg=2.0, areaTol=1.25, maxMissedFrames=3
+        clusterSmoother = new TemporalClusterSmoother(0.3, 2.0, 1.25, 3);
     }
 
     public List<PhotonPipelineResult> getTargets() {
@@ -44,11 +48,13 @@ public class PhotonVision extends SubsystemBase {
                
 
                 List<Cluster> clusters = TargetClusterer.clusterByAngularAndArea(pts, eps, minPts, areaTol);
+                // run temporal smoothing (keeps state across frames inside clusterSmoother)
+                var smoothed = clusterSmoother.update(clusters);
                 SmartDashboard.putString("PhotonVision", String.format("Found %d clusters", clusters.size()));
-                for (int i = 0; i < clusters.size(); i++) {
-                    Cluster cluster = clusters.get(i);
-                    SmartDashboard.putString("Bounding Box: ", cluster.getCorners().toString());
-                    SmartDashboard.putString("PhotonVisionCluster: " + i, "Size: " + cluster.getSize() + " IDs: " + cluster.getIDs().toString());
+                SmartDashboard.putString("PhotonVisionSmoothed", String.format("Found %d smoothed", smoothed.size()));
+                for (int i = 0; i < smoothed.size(); i++) {
+                    TemporalClusterSmoother.SmoothedCluster cluster = smoothed.get(i);
+                    SmartDashboard.putString("PhotonVisionSmoothedCluster: " + i, "Size: " + cluster.size + ", Area: " + String.format("%.2f", cluster.area) + ", Pitch: " + String.format("%.2f", cluster.pitch) + ", Yaw: " + String.format("%.2f", cluster.yaw));
                 }
             }
         }
