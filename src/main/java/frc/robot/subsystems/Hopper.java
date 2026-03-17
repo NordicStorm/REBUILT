@@ -28,7 +28,7 @@ public class Hopper extends SubsystemBase {
 
 
     public Hopper() {
-        SmartDashboard.putNumber("Hopper RPS Request", 0);
+        SmartDashboard.putNumber("Hopper RPS Request", -10);
 
         var hopperSlot0Configs = new Slot0Configs();
         hopperSlot0Configs.kS = 0.1; // Add 0.1 V output to overcome static friction
@@ -38,7 +38,7 @@ public class Hopper extends SubsystemBase {
         hopperSlot0Configs.kD = 0; // no output for error derivative
 
         m_hopperConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        m_hopperConfig.CurrentLimits.SupplyCurrentLimit = 80;
+        m_hopperConfig.CurrentLimits.SupplyCurrentLimit = 40;
         m_hopperConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
         m_hopper.getConfigurator().apply(m_hopperConfig);
