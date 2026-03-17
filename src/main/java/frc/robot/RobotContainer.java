@@ -7,23 +7,24 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Shoot;
 import frc.robot.commands.doIntake;
+import frc.robot.commands.runHopper;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Feeder;
+import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.PhotonVision;
-// import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -40,10 +41,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
  */
 public class RobotContainer {
     // The robot's subsystems and commands are defined here...
-    // private final Shooter m_shooter = new Shooter();
+    private final Shooter m_shooter = new Shooter();
     // private final Feeder m_feeder = new Feeder();
     private final Intake m_intake = new Intake();
-    public final Orchestra music = new Orchestra();
+    private final Hopper m_hopper = new Hopper();
     // private final PhotonVision fuelCamera = new PhotonVision();
     public static double shootingSpeed = .5;
     // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -72,29 +73,22 @@ public class RobotContainer {
     public RobotContainer() {
         // Configure the trigger bindings
         configureBindings();
-        music.loadMusic("output.chrp");
-        // music.addInstrument(m_feeder.m_feeder);
-        // music.addInstrument(m_shooter.m_shooter);
-        for (int i = 0; i < 4; i++) {
-            music.addInstrument(drivetrain.getModule(i).getDriveMotor());
-            music.addInstrument(drivetrain.getModule(i).getSteerMotor());
-        }
     }
 
     private void configureBindings() {
         drivetrain.setDefaultCommand(
-                drivetrain.applyRequest(() -> drive.withVelocityX(MaxSpeed * -m_driverController.getLeftY())
-                        .withVelocityY(MaxSpeed * -m_driverController.getLeftX())
-                        .withRotationalRate(-m_driverController.getRightX())));
+                drivetrain.applyRequest(() -> drive.withVelocityX(MaxSpeed * -m_driverController.getLeftY() * 0)
+                        .withVelocityY(MaxSpeed * -m_driverController.getLeftX() * 0)
+                        .withRotationalRate(-m_driverController.getRightX() * 0)));
 
-        m_driverController.a().onTrue(drivetrain.runOnce(() -> drivetrain.setControl(brake)));
+        //m_driverController.a().onTrue(drivetrain.runOnce(() -> drivetrain.setControl(brake)));
         m_driverController.rightBumper().and(m_driverController.leftBumper())
                 .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
 
         m_driverController.leftTrigger().onTrue(new InstantCommand(() -> m_intake.switchPosition(), m_intake));
-        m_driverController.rightTrigger().whileTrue(new doIntake(m_intake));
+        m_driverController.rightTrigger().onTrue(new doIntake(m_intake));
 
-        m_driverController.b().onTrue(new InstantCommand(() -> music.play()));
-        m_driverController.b().onFalse(new InstantCommand(() -> music.stop()));
+        m_driverController.y().whileTrue(new runHopper(m_hopper));
+        m_driverController.x().onTrue(new InstantCommand(() -> m_shooter.setHoodAngleCommand((int) SmartDashboard.getNumber("Hood Pulse Request", 1500))));
     }
 }

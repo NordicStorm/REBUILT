@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Amps;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -27,23 +28,23 @@ public class Intake extends SubsystemBase {
     private final TalonFXConfiguration m_intakePivotConfig = new TalonFXConfiguration();
     private final TalonFX m_intake = new TalonFX(Constants.MechanismConstants.kIntakeMotorID, "rio");
     private final TalonFX m_intakePivot = new TalonFX(Constants.MechanismConstants.kIntakePivotID, "rio");
-    private final PositionVoltage upPositionRequest = new PositionVoltage(100);
-    private final PositionVoltage downPositionRequest = new PositionVoltage(0);
+    private final PositionVoltage upPositionRequest = new PositionVoltage(0);
+    private final PositionVoltage downPositionRequest = new PositionVoltage(-1.25);
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
 
     private double m_speed = 0;
-    private boolean setIntakeUp = false;
+    private boolean setIntakeUp = true;
 
     public Intake() {
         SmartDashboard.putNumber("Intake RPS Request", 0);
 
         var intakeSlot0Config = new Slot0Configs();
         intakeSlot0Config.kS = 0.1; // Add 0.1 V output to overcome static friction
-        intakeSlot0Config.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-        intakeSlot0Config.kP = 0.11; // An error of 1 rps results in 0.11 V output
-        intakeSlot0Config.kI = 0; // no output for integrated error
-        intakeSlot0Config.kD = 0; // no output for error derivative
+        intakeSlot0Config.kG = 0;
+        intakeSlot0Config.kV = 0.12;
+        intakeSlot0Config.kP = 0.11;
+        intakeSlot0Config.kD = 0;
 
         m_intakeConfig
                 .withMotorOutput(
@@ -54,19 +55,26 @@ public class Intake extends SubsystemBase {
                                 .withStatorCurrentLimit(Amps.of(90))
                                 .withSupplyCurrentLimit(60)
                                 .withStatorCurrentLimitEnable(true)
-                                .withSupplyCurrentLimitEnable(true));
+                                .withSupplyCurrentLimitEnable(true))
+                .withSlot0(intakeSlot0Config);
 
         m_intake.getConfigurator().apply(m_intakeConfig);
-        m_intake.getConfigurator().apply(intakeSlot0Config);
 
         m_intake.optimizeBusUtilization();
 
-        var intakePivotSlot0Config = new Slot0Configs();
-        intakePivotSlot0Config.kS = 0.1; // Add 0.1 V output to overcome static friction
-        intakePivotSlot0Config.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-        intakePivotSlot0Config.kP = 0.11; // An error of 1 rps results in 0.11 V output
-        intakePivotSlot0Config.kI = 0; // no output for integrated error
-        intakePivotSlot0Config.kD = 0; // no output for error derivative
+        var intakePivotSlot0Config = new Slot0Configs(); // Up motion config
+        intakePivotSlot0Config.kG = 0; // Gravity
+        intakePivotSlot0Config.kS = 0.1; // Static friction
+        intakePivotSlot0Config.kV = 0.12;
+        intakePivotSlot0Config.kP = 0.11;
+        intakePivotSlot0Config.kD = 0;
+
+        var intakePivotSlot1Config = new Slot1Configs(); // Down motion config
+        intakePivotSlot1Config.kS = 0.1; // Static friction
+        intakePivotSlot1Config.kG = 0; // Gravity
+        intakePivotSlot1Config.kV = 0.12;
+        intakePivotSlot1Config.kP = 0.11;
+        intakePivotSlot1Config.kD = 0;
 
         m_intakePivotConfig
                 .withMotorOutput(
@@ -74,19 +82,21 @@ public class Intake extends SubsystemBase {
                                 .withNeutralMode(NeutralModeValue.Brake))
                 .withCurrentLimits(
                         new CurrentLimitsConfigs()
-                                .withStatorCurrentLimit(Amps.of(30))
-                                .withSupplyCurrentLimit(15)
+                                .withStatorCurrentLimit(Amps.of(120))
+                                .withSupplyCurrentLimit(Amps.of(40))
                                 .withStatorCurrentLimitEnable(true)
-                                .withSupplyCurrentLimitEnable(true));
+                                .withSupplyCurrentLimitEnable(true))
+                .withSlot0(intakePivotSlot0Config)
+                .withSlot1(intakePivotSlot1Config);
 
         m_intakePivot.getConfigurator().apply(m_intakePivotConfig);
-        m_intakePivot.getConfigurator().apply(intakePivotSlot0Config);
 
         m_intakePivot.optimizeBusUtilization();
     }
 
     public Command moveIntake(boolean up) {
-        // move intake up or down when command starts, always move it down when command ends
+        // move intake up or down when command starts, always move it down when command
+        // ends
         return Commands.startEnd(() -> this.setIntakePivotPosition(up), () -> this.setIntakePivotPosition(false), this);
     }
 
@@ -112,11 +122,18 @@ public class Intake extends SubsystemBase {
     }
 
     private void setIntakePivotPosition(boolean up) {
-        m_intakePivot.setControl(up ? upPositionRequest : downPositionRequest);
+        m_intakePivot.setControl(up ? upPositionRequest.withSlot(0) : downPositionRequest.withSlot(1));
     }
 
     public void setRPM(double RPM) {
         m_speed = RPM / 60;
+    }
+
+    public boolean atSetPoint() {
+        double currentPosition = m_intakePivot.getPosition().getValueAsDouble();
+        double targetPosition = setIntakeUp ? upPositionRequest.getPositionMeasure().magnitude()
+                : downPositionRequest.getPositionMeasure().magnitude();
+        return Math.abs(currentPosition - targetPosition) < .1; // Tolerance of .1 rot
     }
 
     public Command feed(double rpm) {
@@ -139,6 +156,7 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         setIntakeRPM(m_speed);
         setIntakePivotPosition(setIntakeUp);
+        SmartDashboard.putNumber("Intake Position Request", setIntakeUp ? 0 : -1.25);
         SmartDashboard.putNumber("Intake Pivot Position", getIntakePivotLocation());
     }
 }

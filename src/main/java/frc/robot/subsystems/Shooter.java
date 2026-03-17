@@ -6,12 +6,18 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.servohub.ServoChannel;
+import com.revrobotics.servohub.ServoHub;
+import com.revrobotics.servohub.ServoChannel.ChannelId;
+import com.revrobotics.servohub.config.ServoChannelConfig;
+import com.revrobotics.servohub.config.ServoHubConfig;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Utils;
 
 public class Shooter extends SubsystemBase {
 
@@ -20,9 +26,13 @@ public class Shooter extends SubsystemBase {
     //
     private final TalonFXConfiguration m_shooterConfig = new TalonFXConfiguration();
     public final TalonFX m_shooter = new TalonFX(Constants.MechanismConstants.kShooter1ID, "rio");
+    private final ServoHub m_ServoHub = new ServoHub(Constants.MechanismConstants.kServoHubID);
+    private final ServoHubConfig m_servoHubConfig = new ServoHubConfig();
+    private final ServoChannel m_hoodServo = m_ServoHub.getServoChannel(ChannelId.kChannelId1);
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
 
     private double m_speed = 0;
+    private int m_hoodServoPulseWidth = 1500; // TODO
 
     //
     // PID
@@ -30,6 +40,7 @@ public class Shooter extends SubsystemBase {
 
     public Shooter() {
         SmartDashboard.putNumber("Shooter RPS Request", 0);
+        SmartDashboard.putNumber("Hood Pulse Request", 1500);
 
         /*
          * Kg - output to overcome gravity (output)
@@ -66,6 +77,16 @@ public class Shooter extends SubsystemBase {
         m_shooter.getConfigurator().apply(shooterSlot0Configs);
 
         m_shooter.optimizeBusUtilization();
+
+        m_servoHubConfig.channel0
+                .pulseRange(500, 1500, 2500)
+                .disableBehavior(ServoChannelConfig.BehaviorWhenDisabled.kSupplyPower);
+
+        m_ServoHub.configure(m_servoHubConfig, ServoHub.ResetMode.kResetSafeParameters);
+        m_hoodServo.setPowered(true);
+        m_hoodServo.setEnabled(true);
+
+        m_ServoHub.setBankPulsePeriod(ServoHub.Bank.kBank0_2, 10000);
     }
 
     public void setRPM(double RPM) {
@@ -88,12 +109,21 @@ public class Shooter extends SubsystemBase {
         setRPM(0);
     }
 
-    public void setVoltage(double v) {
-        m_shooter.setVoltage(v);
+    public void setHoodAngle(int pulseWidth) {
+        m_hoodServoPulseWidth = Utils.clamp(pulseWidth, 500, 2500);
+    }
+
+    public Command setHoodAngleCommand(int pulseWidth) {
+        return Commands.runOnce(() -> setHoodAngle(pulseWidth), this);
+    }
+
+    private void updateHoodAngle() {
+        m_hoodServo.setPulseWidth(m_hoodServoPulseWidth);
     }
 
     public void periodic() {
         setShooterRPM(m_speed);
+        updateHoodAngle();
         SmartDashboard.putNumber("Shooter Velocity", m_shooter.getVelocity().getValueAsDouble());
         SmartDashboard.putNumber("Shooting Value", m_speed);
         SmartDashboard.putNumber("Requested PID", m_shooter.getMotorVoltage().getValueAsDouble());

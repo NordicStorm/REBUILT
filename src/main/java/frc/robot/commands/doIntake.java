@@ -2,37 +2,41 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Intake;
 
 public class doIntake extends Command {
 
     private Intake m_intake;
-    private long startTime;
+    private final boolean movingIntakeUp;
 
     public doIntake(Intake intake) {
         this.m_intake = intake;
+        this.movingIntakeUp = !intake.isIntakeUp();
+        addRequirements(intake);
     }
 
     @Override
     public void initialize() {
-        this.startTime = System.currentTimeMillis();
-        m_intake.setIntakeDown();
+        if (movingIntakeUp) {
+            m_intake.setIntakeUp();
+        } else {
+            m_intake.setIntakeDown();
+        }
     }
 
     @Override
     public void execute() {
         double intakeRPM = SmartDashboard.getNumber("Intake RPS Request", 0);
-        m_intake.setRPM(intakeRPM);
+        if (!movingIntakeUp) {
+            m_intake.setRPM(intakeRPM);
+        } else {
+            m_intake.stop();
+        }
     }
 
     @Override
     public boolean isFinished() {
-        return (System.currentTimeMillis() - startTime) > 3000;
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        m_intake.setIntakeDown();
-        m_intake.stop();
+        return m_intake.atSetPoint();
     }
 }

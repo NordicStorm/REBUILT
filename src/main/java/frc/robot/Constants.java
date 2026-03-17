@@ -26,8 +26,8 @@ public final class Constants {
         public static final int kFeederMotorID = 10;
         public static final int kIntakeMotorID = 12;
         public static final int kIntakePivotID = 8;
-        public static final double kRotationToInches = .418; // 1.0/20.0 * ((68.8/25.4)/2) * Math.PI * 2.0;//TODO: Find
-                                                             // the correct value
+        public static final int kHopperMotorID = 21;
+        public static final int kServoHubID = 1;
     }
 
     public static class ShooterConstants {
@@ -35,5 +35,25 @@ public final class Constants {
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double kF = 0;
+    }
+
+    public static class IntakeConstants {
+        public static final double kP_Pivot_Up = 0;
+        public static final double kG_Pivot_Up = 0;
+        public static final double kD_Pivot_Up = 0;
+        public static final double kS_Pivot_Up = 0;
+        public static final double kV_Pivot_Up = 0;
+
+
+        public static final double kP_Pivot_Down = 0;
+        public static final double kG_Pivot_Down = 0;
+        public static final double kD_Pivot_Down = 0;
+        public static final double kS_Pivot_Down = 0;
+        public static final double kV_Pivot_Down = 0;
+
+        public static final double kP_Intake = 0;
+        public static final double kI_Intake = 0;
+        public static final double kD_Intake = 0;
+        public static final double kF_Intake = 0;
     }
 }

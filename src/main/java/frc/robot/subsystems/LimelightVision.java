@@ -19,13 +19,13 @@ public class LimelightVision extends SubsystemBase {
         LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
         if(limelightMeasurement == null) return;
         // Add it to your pose estimator
-        if (limelightMeasurement.tagCount >= 1) {
+        if (limelightMeasurement.tagCount >= 2) {
             RobotContainer.drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.9, .9, 9999999));
             RobotContainer.drivetrain.addVisionMeasurement(
                     limelightMeasurement.pose,
                     limelightMeasurement.timestampSeconds);
         }
-        SmartDashboard.putNumber("Limelight Time", LimelightHelpers.getLimelightNTDouble("", "hb"));
+        //SmartDashboard.putNumber("Limelight Time", LimelightHelpers.getLimelightNTDouble("", "hb"));
 
     }
     public boolean isValid() {
@@ -39,6 +39,4 @@ public class LimelightVision extends SubsystemBase {
     public double getXOffset(){
         return LimelightHelpers.getTX("");
     }
-
-
 }
