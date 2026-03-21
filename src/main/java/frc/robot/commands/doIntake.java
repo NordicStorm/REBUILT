@@ -10,9 +10,9 @@ public class doIntake extends Command {
     private Intake m_intake;
     private final boolean movingIntakeUp;
 
-    public doIntake(Intake intake) {
+    public doIntake(Intake intake, boolean movingIntakeUp) {
         this.m_intake = intake;
-        this.movingIntakeUp = !intake.isIntakeUp();
+        this.movingIntakeUp = movingIntakeUp;
         addRequirements(intake);
     }
 

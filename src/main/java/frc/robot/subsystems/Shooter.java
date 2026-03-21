@@ -131,4 +131,8 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("Hood Pulse Width", m_hoodServo.getPulseWidth());
         SmartDashboard.putNumber("Requested PID", m_shooter.getMotorVoltage().getValueAsDouble());
     }
+
+    public boolean atSetPoint() {
+        return Math.abs(m_shooter.getVelocity().getValueAsDouble() - m_speed) < 10; // TODO: Adjust threshold as needed
+    }
 }

@@ -42,7 +42,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 public class RobotContainer {
     // The robot's subsystems and commands are defined here...
     private final Shooter m_shooter = new Shooter();
-    // private final Feeder m_feeder = new Feeder();
+    private final Feeder m_feeder = new Feeder();
     private final Intake m_intake = new Intake();
     private final Hopper m_hopper = new Hopper();
     // private final PhotonVision fuelCamera = new PhotonVision();
@@ -86,9 +86,12 @@ public class RobotContainer {
                 .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
 
         m_driverController.leftTrigger().onTrue(new InstantCommand(() -> m_intake.switchPosition(), m_intake));
-        m_driverController.rightTrigger().onTrue(new doIntake(m_intake));
-        
+        m_driverController.y().onTrue(new doIntake(m_intake, true));
+        m_driverController.b().onTrue(new doIntake(m_intake, false));
+
         //m_driverController.y().whileTrue(new runHopper(m_hopper));
         m_driverController.x().onTrue(new InstantCommand(() -> m_hopper.switchFeeding(), m_hopper));
+
+        m_driverController.a().onTrue(new Shoot(m_shooter, m_feeder, m_hopper));
     }
 }
