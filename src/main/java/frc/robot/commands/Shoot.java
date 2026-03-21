@@ -1,7 +1,10 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
+import frc.robot.Util;
 import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Hopper;
@@ -47,5 +50,17 @@ public class Shoot extends Command{
     public void end(boolean interrupted) {
         m_feeder.stop();
         m_shooter.stop();
+    }
+
+    public static double getRotationVelocity() {
+        double current = RobotContainer.drivetrain.getGyroDegrees();
+        double target = getAngleToTarget();
+        return (current - target) * 0.1;
+    }
+
+    public static double getAngleToTarget() {
+        Pose2d target = RobotContainer.targetPosition;
+        Pose2d current = RobotContainer.drivetrain.getPose();
+        return Math.toDegrees(Util.angleBetweenPoses(target, current));
     }
 }

@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Utils;
+import frc.robot.Util;
 
 public class Shooter extends SubsystemBase {
 
@@ -110,7 +110,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setHoodAngle(int pulseWidth) {
-        m_hoodServoPulseWidth = Utils.clamp(pulseWidth, 1000, 2000);
+        m_hoodServoPulseWidth = (int) Util.clamp(pulseWidth, 1000, 2000);
         m_hoodServo.setPulseWidth(m_hoodServoPulseWidth);
     }
 

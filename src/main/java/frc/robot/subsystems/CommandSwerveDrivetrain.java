@@ -225,16 +225,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    /**
-     * Returns a command that applies the specified control request to this swerve
-     * drivetrain.
-     *
-     * @param request Function returning the request to apply
-     * @return Command to run
-     */
-    public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
-        return run(() -> this.setControl(requestSupplier.get()));
-    }
+    
 
     /**
      * Runs the SysId Quasistatic test in the given direction for the routine
@@ -296,6 +287,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+        setControl(m_drive);
     }
 
     private void startSimThread() {
@@ -399,4 +391,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         resetRotation(Rotation2d.kZero);
     }
 
+    public void driveWithPrivilege(ChassisSpeeds speeds, int rotationalPrivilege) {
+        setControl(m_drive.withVelocityX(speeds.vxMetersPerSecond).withVelocityY(speeds.vyMetersPerSecond)
+                .withRotationalRate(speeds.omegaRadiansPerSecond));
+    }
 }

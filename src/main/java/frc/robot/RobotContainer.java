@@ -5,6 +5,7 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.OperatorControl;
 import frc.robot.commands.Shoot;
 import frc.robot.commands.doIntake;
 import frc.robot.commands.runHopper;
@@ -51,9 +52,10 @@ public class RobotContainer {
     // private final PhotonVision fuelCamera = new PhotonVision();
     public static double shootingSpeed = .5;
     public static Pose2d targetPosition;
+    public static double AllianceAngleRad;
     public static boolean isBlue;
     // Replace with CommandPS4Controller or CommandJoystick if needed
-    private final CommandXboxController m_driverController = new CommandXboxController(
+    public static CommandXboxController m_driverController = new CommandXboxController(
             OperatorConstants.kDriverControllerPort);
     private final CommandXboxController m_secondController = new CommandXboxController(1);
 
@@ -80,15 +82,17 @@ public class RobotContainer {
         configureBindings();
         isBlue = DriverStation.getAlliance().get() == Alliance.Blue;
         if (isBlue) {
-                targetPosition = new Pose2d(5,5,Rotation2d.kZero);
+                targetPosition = new Pose2d(4.948,8.069263/2,Rotation2d.kZero);
+                AllianceAngleRad = 0;
+        } else {
+                targetPosition = new Pose2d(11.554,8.069263/2,Rotation2d.fromDegrees(180));
+                AllianceAngleRad = Rotation2d.k180deg.getRadians();
         }
     }
 
     private void configureBindings() {
         drivetrain.setDefaultCommand(
-                drivetrain.applyRequest(() -> drive.withVelocityX(MaxSpeed * -m_driverController.getLeftY() * 0)
-                        .withVelocityY(MaxSpeed * -m_driverController.getLeftX() * 0)
-                        .withRotationalRate(-m_driverController.getRightX() * 0)));
+                new OperatorControl(drivetrain));
 
         //m_driverController.a().onTrue(drivetrain.runOnce(() -> drivetrain.setControl(brake)));
         m_driverController.rightBumper().and(m_driverController.leftBumper())

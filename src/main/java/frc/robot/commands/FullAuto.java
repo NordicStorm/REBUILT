@@ -27,10 +27,10 @@ public class FullAuto extends SequentialCommandGroup {
         MultiPartPath pathA = new MultiPartPath(RobotContainer.drivetrain, config, null);
         pathA.resetPosition(0.381, 7.000);
         pathA.addWaypoint(2.050, 7.000);
-        pathA.addWaypoint(11.928, 4.028);
+        pathA.addWaypoint(4.666, 8.063);
         if (doLastPart) {// path on
             pathA.addWaypoint(4.430, 5.364);
-            pathA.addWaypoint(3.401, 5.027);
+            pathA.addWaypoint(4.803, 4.011);
         }
         pathA.addStop();
         addCommands(pathA.finalizePath());
