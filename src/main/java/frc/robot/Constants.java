@@ -22,7 +22,10 @@ public final class Constants {
     }
 
     public static class MechanismConstants {
-        public static final int kShooter1ID = 11;
+        public static final int kLeftShooterID = 11;
+        public static final int kMiddleShooterID = 11; //TODO
+        public static final int kRightShooterID = 11;//TODO
+
         public static final int kFeederMotorID = 10;
         public static final int kIntakeMotorID = 12;
         public static final int kIntakePivotID = 8;
@@ -40,7 +43,7 @@ public final class Constants {
     public static class IntakeConstants {
         public static final double kP_Pivot_Up = 7;
         public static final double kG_Pivot_Up = 0.55;
-        
+
         public static final double kP_Pivot_Down = 15;
         public static final double kD_Pivot_Down = 1;
 
@@ -53,6 +56,10 @@ public final class Constants {
     public static class HopperConstants {
         public static final double kP = .25;
         public static final double kV = .15;
+    }
 
+    public static class FeederConstants {
+        public static final double kP = .25;
+        public static final double kV = .15;
     }
 }

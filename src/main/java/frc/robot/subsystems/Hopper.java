@@ -68,10 +68,6 @@ public class Hopper extends SubsystemBase {
         setRPM(0);
     }
 
-    public void setVoltage(double v) {
-        m_hopper.setVoltage(v);
-    }
-
     private void setHopper(boolean isFeeding) {
         if (isFeeding) {
             m_hopper.setControl(velocityRequest);
@@ -82,6 +78,14 @@ public class Hopper extends SubsystemBase {
 
     public void switchFeeding() {
         isFeeding = !isFeeding;
+    }
+
+    public Command startHopper() {
+        return Commands.run(() -> this.setHopper(true), this);
+    }
+
+    public Command endHopper() {
+        return Commands.run(()-> this.setHopper(false), this);
     }
 
     @Override
