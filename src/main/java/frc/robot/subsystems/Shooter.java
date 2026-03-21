@@ -133,6 +133,6 @@ public class Shooter extends SubsystemBase {
     }
 
     public boolean atSetPoint() {
-        return Math.abs(m_shooter.getVelocity().getValueAsDouble() - m_speed) < 10; // TODO: Adjust threshold as needed
+        return Math.abs(m_shooter.getVelocity().getValueAsDouble() - m_speed) < 1; // TODO: Adjust threshold as needed
     }
 }
