@@ -7,7 +7,6 @@ import frc.robot.subsystems.Hopper;
 public class runHopper extends Command{
 
     private Hopper m_hopper;
-    private long startTime;
 
     public runHopper(Hopper hopper) {
         this.m_hopper = hopper;
@@ -16,7 +15,6 @@ public class runHopper extends Command{
     @Override
     public void initialize() {
         m_hopper.setRPM(0);
-        this.startTime = System.currentTimeMillis();
     }
 
     @Override
