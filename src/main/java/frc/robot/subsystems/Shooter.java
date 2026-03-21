@@ -32,7 +32,7 @@ public class Shooter extends SubsystemBase {
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
 
     private double m_speed = 0;
-    private int m_hoodServoPulseWidth = 1500; // TODO
+    private int m_hoodServoPulseWidth = 1000; // TODO
 
     //
     // PID
@@ -40,7 +40,7 @@ public class Shooter extends SubsystemBase {
 
     public Shooter() {
         SmartDashboard.putNumber("Shooter RPS Request", 0);
-        SmartDashboard.putNumber("Hood Pulse Request", 1500);
+        SmartDashboard.putNumber("Hood Pulse Request", 1000);
 
         /*
          * Kg - output to overcome gravity (output)
@@ -79,7 +79,7 @@ public class Shooter extends SubsystemBase {
         m_shooter.optimizeBusUtilization();
 
         m_servoHubConfig.channel0
-                .pulseRange(500, 1500, 2500)
+                .pulseRange(1000, 1500, 2000)
                 .disableBehavior(ServoChannelConfig.BehaviorWhenDisabled.kSupplyPower);
 
         m_ServoHub.configure(m_servoHubConfig, ServoHub.ResetMode.kResetSafeParameters);
@@ -110,7 +110,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setHoodAngle(int pulseWidth) {
-        m_hoodServoPulseWidth = Utils.clamp(pulseWidth, 500, 2500);
+        m_hoodServoPulseWidth = Utils.clamp(pulseWidth, 1000, 2000);
+        m_hoodServo.setPulseWidth(m_hoodServoPulseWidth);
     }
 
     public Command setHoodAngleCommand(int pulseWidth) {
@@ -123,9 +124,11 @@ public class Shooter extends SubsystemBase {
 
     public void periodic() {
         setShooterRPM(m_speed);
+        m_hoodServoPulseWidth = (int) SmartDashboard.getNumber("Hood Pulse Request", 1000);
         updateHoodAngle();
         SmartDashboard.putNumber("Shooter Velocity", m_shooter.getVelocity().getValueAsDouble());
         SmartDashboard.putNumber("Shooting Value", m_speed);
+        SmartDashboard.putNumber("Hood Pulse Width", m_hoodServo.getPulseWidth());
         SmartDashboard.putNumber("Requested PID", m_shooter.getMotorVoltage().getValueAsDouble());
     }
 }

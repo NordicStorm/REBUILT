@@ -2,9 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Hopper;
-import frc.robot.subsystems.Shooter;
 
 public class runHopper extends Command{
 
@@ -23,13 +21,8 @@ public class runHopper extends Command{
 
     @Override
     public void execute() {
-        double hopperRPM = SmartDashboard.getNumber("Hopper RPS Request", 0);
+        double hopperRPM = SmartDashboard.getNumber("Hopper RPS Request", -15);
         m_hopper.setRPM(hopperRPM);
-    }
-
-    @Override
-    public boolean isFinished() {
-        return (System.currentTimeMillis() - startTime) > 2000;
     }
 
     @Override

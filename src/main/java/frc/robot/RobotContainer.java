@@ -88,8 +88,7 @@ public class RobotContainer {
         m_driverController.leftTrigger().onTrue(new InstantCommand(() -> m_intake.switchPosition(), m_intake));
         m_driverController.rightTrigger().onTrue(new doIntake(m_intake));
         
-        m_driverController.a().onTrue(m_shooter.setHoodAngleCommand((int) SmartDashboard.getNumber("Hood Pulse Request", 1500)));
-        m_driverController.y().whileTrue(new runHopper(m_hopper));
-        m_driverController.x().onTrue(new InstantCommand(() -> m_shooter.setHoodAngleCommand((int) SmartDashboard.getNumber("Hood Pulse Request", 1500))));
+        //m_driverController.y().whileTrue(new runHopper(m_hopper));
+        m_driverController.x().onTrue(new InstantCommand(() -> m_hopper.switchFeeding(), m_hopper));
     }
 }

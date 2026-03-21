@@ -27,7 +27,7 @@ public final class Constants {
         public static final int kIntakeMotorID = 12;
         public static final int kIntakePivotID = 8;
         public static final int kHopperMotorID = 21;
-        public static final int kServoHubID = 1;
+        public static final int kServoHubID = 3;
     }
 
     public static class ShooterConstants {
@@ -38,22 +38,21 @@ public final class Constants {
     }
 
     public static class IntakeConstants {
-        public static final double kP_Pivot_Up = 0;
-        public static final double kG_Pivot_Up = 0;
-        public static final double kD_Pivot_Up = 0;
-        public static final double kS_Pivot_Up = 0;
-        public static final double kV_Pivot_Up = 0;
-
-
-        public static final double kP_Pivot_Down = 0;
-        public static final double kG_Pivot_Down = 0;
-        public static final double kD_Pivot_Down = 0;
-        public static final double kS_Pivot_Down = 0;
-        public static final double kV_Pivot_Down = 0;
+        public static final double kP_Pivot_Up = 7;
+        public static final double kG_Pivot_Up = 0.55;
+        
+        public static final double kP_Pivot_Down = 15;
+        public static final double kD_Pivot_Down = 1;
 
         public static final double kP_Intake = 0;
         public static final double kI_Intake = 0;
         public static final double kD_Intake = 0;
-        public static final double kF_Intake = 0;
+        public static final double kS_Intake = 0;
+    }
+
+    public static class HopperConstants {
+        public static final double kP = .25;
+        public static final double kV = .15;
+
     }
 }

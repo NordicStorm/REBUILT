@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.HopperConstants;;
+
 
 
 public class Hopper extends SubsystemBase {
@@ -22,20 +24,19 @@ public class Hopper extends SubsystemBase {
 
     private final TalonFXConfiguration m_hopperConfig = new TalonFXConfiguration();
     public final TalonFX m_hopper = new TalonFX(Constants.MechanismConstants.kHopperMotorID, "rio");
-    final VelocityVoltage velocityRequest = new VelocityVoltage(-15);
+    final VelocityVoltage velocityRequest = new VelocityVoltage(-20);
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
+
+    private boolean isFeeding = false;
 
 
 
     public Hopper() {
-        SmartDashboard.putNumber("Hopper RPS Request", -10);
+        SmartDashboard.putNumber("Hopper RPS Request", -20);
 
         var hopperSlot0Configs = new Slot0Configs();
-        hopperSlot0Configs.kS = 0.1; // Add 0.1 V output to overcome static friction
-        hopperSlot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-        hopperSlot0Configs.kP = 0.11; // An error of 1 rps results in 0.11 V output
-        hopperSlot0Configs.kI = 0; // no output for integrated error
-        hopperSlot0Configs.kD = 0; // no output for error derivative
+        hopperSlot0Configs.kV = HopperConstants.kV; 
+        hopperSlot0Configs.kP = HopperConstants.kP;
 
         m_hopperConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         m_hopperConfig.CurrentLimits.SupplyCurrentLimit = 40;
@@ -55,7 +56,7 @@ public class Hopper extends SubsystemBase {
         if (rpm == 0) {
             m_hopper.set(rpm);
         } else {
-            m_hopper.setControl(velocityRequest.withVelocity(rpm));
+            m_hopper.setControl(velocityRequest);
         }
     }
 
@@ -71,9 +72,23 @@ public class Hopper extends SubsystemBase {
         m_hopper.setVoltage(v);
     }
 
+    private void setHopper(boolean isFeeding) {
+        if (isFeeding) {
+            m_hopper.setControl(velocityRequest);
+        } else {
+            m_hopper.set(0);
+        }
+    }
+
+    public void switchFeeding() {
+        isFeeding = !isFeeding;
+    }
+
     @Override
     public void periodic() {
-        setHopperRPM(m_speed);
+        //setHopperRPM(m_speed);
+        setHopper(isFeeding);
+        SmartDashboard.putBoolean("Is feeding", isFeeding);
         SmartDashboard.putNumber("Hopper Velocity", m_hopper.getVelocity().getValueAsDouble());
     }
 }
