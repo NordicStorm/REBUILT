@@ -391,4 +391,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return m_driveTrainConfig;
     }
 
+    public void resetAngle() {
+        resetGyro();
+    }
+
+    public void resetGyro() {
+        resetRotation(Rotation2d.kZero);
+    }
+
 }

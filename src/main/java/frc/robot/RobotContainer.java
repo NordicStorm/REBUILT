@@ -25,6 +25,8 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -49,6 +51,7 @@ public class RobotContainer {
     // private final PhotonVision fuelCamera = new PhotonVision();
     public static double shootingSpeed = .5;
     public static Pose2d targetPosition;
+    public static boolean isBlue;
     // Replace with CommandPS4Controller or CommandJoystick if needed
     private final CommandXboxController m_driverController = new CommandXboxController(
             OperatorConstants.kDriverControllerPort);
@@ -75,6 +78,10 @@ public class RobotContainer {
     public RobotContainer() {
         // Configure the trigger bindings
         configureBindings();
+        isBlue = DriverStation.getAlliance().get() == Alliance.Blue;
+        if (isBlue) {
+                targetPosition = new Pose2d(5,5,Rotation2d.kZero);
+        }
     }
 
     private void configureBindings() {
