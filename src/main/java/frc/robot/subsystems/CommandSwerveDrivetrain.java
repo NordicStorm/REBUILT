@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
+import frc.robot.Util;
 import frc.robot.commands.paths.DriveTrainConfig;
 import frc.robot.commands.paths.PathableDrivetrain;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -394,5 +396,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void driveWithPrivilege(ChassisSpeeds speeds, int rotationalPrivilege) {
         setControl(m_drive.withVelocityX(speeds.vxMetersPerSecond).withVelocityY(speeds.vyMetersPerSecond)
                 .withRotationalRate(speeds.omegaRadiansPerSecond));
+    }
+
+    public double getDistanceToVirtualHub() {
+        Pose2d currentPose = getPose();
+        return Util.distance(currentPose, RobotContainer.targetPosition);
+    }
+
+    public Pose2d getTargetPassPoint() {
+        Pose2d currentPose = getPose();
+        return currentPose.getY() >= 4.035 ? RobotContainer.topPassingTarget : RobotContainer.bottomPassingTarget;
+    }
+
+    public double getDistanceToPassPoint() {
+        Pose2d currentPose = getPose();
+        return Util.distance(currentPose, getTargetPassPoint());
     }
 }

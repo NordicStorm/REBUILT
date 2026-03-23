@@ -22,7 +22,6 @@ public class OperatorControl extends Command {
         addRequirements(driveTrain);
     }
 
-    // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
 
@@ -33,15 +32,13 @@ public class OperatorControl extends Command {
         double sideways = -controller.getLeftX();
         double rot = -controller.getRightX();
 
-        double throttle = 0.5;//rightStick.getThrottle();
+        double throttle = 0.5;
         throttle = Util.map(throttle, 1, -1, 0.1, 1);
 
-        SmartDashboard.putNumber("stick", forward);
+//        throttle= config.maxVelocity;
 
-        throttle= config.maxVelocity;
-
-        forward = Util.applyDeadzone(forward, 0.1) * throttle;
-        sideways = Util.applyDeadzone(sideways, 0.1) * throttle;
+        forward = Util.applyDeadzone(forward, 0.1) * throttle * config.maxVelocity;
+        sideways = Util.applyDeadzone(sideways, 0.1) * throttle * config.maxVelocity;
         rot = Util.applyDeadzone(rot, 
         0.2);
         rot = Util.signedSquare(rot);
@@ -50,7 +47,7 @@ public class OperatorControl extends Command {
         ChassisSpeeds localSpeeds = Util.rotateSpeeds(new ChassisSpeeds(forward, sideways, rot),
            driveTrain.getGyroRadians() + RobotContainer.AllianceAngleRad);
         if (controller.x().getAsBoolean()) {
-            localSpeeds.omegaRadiansPerSecond = Shoot.getRotationVelocity();
+            localSpeeds.omegaRadiansPerSecond = AutoShoot.getRotationVelocity();
         }
         driveTrain.drive(localSpeeds);
 

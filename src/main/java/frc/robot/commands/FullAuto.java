@@ -25,12 +25,12 @@ public class FullAuto extends SequentialCommandGroup {
         config.maxAnglularVelocity = 12;
 
         MultiPartPath pathA = new MultiPartPath(RobotContainer.drivetrain, config, null);
-        pathA.resetPosition(0.381, 7.000);
+        pathA.resetPosition(0.381, 6.010);
         pathA.addWaypoint(2.050, 7.000);
         pathA.addWaypoint(4.666, 8.063);
         if (doLastPart) {// path on
             pathA.addWaypoint(4.430, 5.364);
-            pathA.addWaypoint(4.803, 4.011);
+            pathA.addWaypoint(4.628, 4.046);
         }
         pathA.addStop();
         addCommands(pathA.finalizePath());

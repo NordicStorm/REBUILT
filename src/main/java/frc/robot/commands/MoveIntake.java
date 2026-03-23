@@ -4,12 +4,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Intake;
 
-public class doIntake extends Command {
+public class MoveIntake extends Command {
 
     private Intake m_intake;
     private final boolean movingIntakeUp;
 
-    public doIntake(Intake intake, boolean movingIntakeUp) {
+    public MoveIntake(Intake intake, boolean movingIntakeUp) {
         this.m_intake = intake;
         this.movingIntakeUp = movingIntakeUp;
         addRequirements(intake);
@@ -24,16 +24,7 @@ public class doIntake extends Command {
         }
     }
 
-    @Override
-    public void execute() {
-        double intakeRPM = SmartDashboard.getNumber("Intake RPS Request", 0);
-        if (!movingIntakeUp) {
-            m_intake.setRPM(intakeRPM);
-        } else {
-            m_intake.stop();
-        }
-    }
-
+   
     @Override
     public boolean isFinished() {
         return m_intake.atSetPoint();

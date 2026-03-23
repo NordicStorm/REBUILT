@@ -39,7 +39,7 @@ class Curve:
         terms = []
         exponent = len(self.line.c)-1
         for ind, term in enumerate(self.line.c):
-            terms.append(f"{term}"+"*x"*exponent)
+            terms.append(f"{term:.3f}"+"*x"*exponent)
             exponent-=1
         return " + ".join(terms)
     def set_order(self, new_order):
@@ -172,7 +172,7 @@ pygame.init()
 font = pygame.font.SysFont("Arial", 10)
 point_colors = [COLORS['red'], COLORS['green'], COLORS['blue'], COLORS['purple'], COLORS['orange'], COLORS['yellow']]
 store_path = r".\shootercurve.csv"
-file_path =  r".\src\main\java\frc\robot\subsystems\ShooterSubsystem.java"
+file_path =  r".\src\main\java\frc\robot\subsystems\Shooter.java"
 curves = load_curves()
 
 screen = pygame.display.set_mode([640,480])

@@ -30,8 +30,8 @@ public class Intake extends SubsystemBase {
     private final TalonFXConfiguration m_intakePivotConfig = new TalonFXConfiguration();
     private final TalonFX m_intake = new TalonFX(MechanismConstants.kIntakeMotorID, "rio");
     private final TalonFX m_intakePivot = new TalonFX(MechanismConstants.kIntakePivotID, "rio");
-    private final PositionVoltage upPositionRequest = new PositionVoltage(-.03);
-    private final PositionVoltage downPositionRequest = new PositionVoltage(-.35);
+    private final PositionVoltage upPositionRequest = new PositionVoltage(-.01);
+    private final PositionVoltage downPositionRequest = new PositionVoltage(-.29);
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
 
@@ -46,6 +46,8 @@ public class Intake extends SubsystemBase {
         intakeSlot0Config.kP = IntakeConstants.kP_Intake;
         intakeSlot0Config.kI = IntakeConstants.kI_Intake;
         intakeSlot0Config.kD = IntakeConstants.kD_Intake;
+        intakeSlot0Config.kV = .1;
+
 
         m_intakeConfig
                 .withMotorOutput(
@@ -63,6 +65,13 @@ public class Intake extends SubsystemBase {
 
         m_intake.optimizeBusUtilization();
 
+        var intakePivotSlot0Config = new Slot0Configs();
+        intakePivotSlot0Config.kP = IntakeConstants.kP_Pivot_Down;
+        intakePivotSlot0Config.kD = IntakeConstants.kD_Pivot_Down;
+        intakePivotSlot0Config.kG = IntakeConstants.kG_Pivot_Up;
+        intakePivotSlot0Config.withGravityType(GravityTypeValue.Arm_Cosine);
+        intakePivotSlot0Config.withGravityArmPositionOffset(.25);
+
         var intakePivotSlot1Config = new Slot1Configs(); // Down motion config
         intakePivotSlot1Config.kP = IntakeConstants.kP_Pivot_Down;
         intakePivotSlot1Config.kD = IntakeConstants.kD_Pivot_Down;
@@ -79,6 +88,7 @@ public class Intake extends SubsystemBase {
                                 .withSupplyCurrentLimit(Amps.of(30))
                                 .withStatorCurrentLimitEnable(true)
                                 .withSupplyCurrentLimitEnable(true))
+                .withSlot0(intakePivotSlot0Config)
                 .withSlot1(intakePivotSlot1Config)
                 .Feedback.withSensorToMechanismRatio(25);
 
@@ -115,7 +125,7 @@ public class Intake extends SubsystemBase {
     }
 
     private void setIntakePivotPosition(boolean up) {
-        m_intakePivot.setControl(up ? upPositionRequest.withSlot(1) : downPositionRequest.withSlot(1)); // First should be 0
+        m_intakePivot.setControl(up ? upPositionRequest.withSlot(0) : downPositionRequest.withSlot(1)); // First should be 0
     }
 
     public void setRPM(double RPM) {
@@ -127,6 +137,10 @@ public class Intake extends SubsystemBase {
         double targetPosition = setIntakeUp ? upPositionRequest.getPositionMeasure().magnitude()
                 : downPositionRequest.getPositionMeasure().magnitude();
         return Math.abs(currentPosition - targetPosition) < .1; // Tolerance of .1 rot
+    }
+
+    public boolean isClear() {
+        return m_intakePivot.getPosition().getValueAsDouble() < -.15;
     }
 
     public Command intake(double rpm) {

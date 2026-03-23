@@ -224,7 +224,7 @@ public class MultiPartPath {
     public void flipAllX() {
         for (var pieceInfo : pieces) {
             var piece = pieceInfo.getFirst();
-            double totalWidth = 17.548;
+            double totalWidth = 16.541;
             
             if (piece.getPieceType() == PieceType.Waypoint) {
                 WaypointPiece wpPiece = (WaypointPiece) piece;
@@ -248,7 +248,7 @@ public class MultiPartPath {
      */
     public void flipAllY() {
         for (var pieceInfo : pieces) {
-            double totalHeight = 8.052;
+            double totalHeight = 8.069;
             var piece = pieceInfo.getFirst();
             if (piece.getPieceType() == PieceType.Waypoint) {
                 WaypointPiece wpPiece = (WaypointPiece) piece;

@@ -5,10 +5,11 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.AutoShoot;
+import frc.robot.commands.MoveIntake;
 import frc.robot.commands.OperatorControl;
-import frc.robot.commands.Shoot;
-import frc.robot.commands.doIntake;
-import frc.robot.commands.runHopper;
+import frc.robot.commands.RunIntake;
+import frc.robot.commands.AutoShoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Feeder;
@@ -51,7 +52,7 @@ public class RobotContainer {
     private final Hopper m_hopper = new Hopper();
     // private final PhotonVision fuelCamera = new PhotonVision();
     public static double shootingSpeed = .5;
-    public static Pose2d targetPosition;
+    public static Pose2d targetPosition, topPassingTarget, bottomPassingTarget;;;;;;;;;;;
     public static double AllianceAngleRad;
     public static boolean isBlue;
     // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -82,29 +83,30 @@ public class RobotContainer {
         configureBindings();
         isBlue = DriverStation.getAlliance().get() == Alliance.Blue;
         if (isBlue) {
-                targetPosition = new Pose2d(4.948,8.069263/2,Rotation2d.kZero);
+                targetPosition = new Pose2d(4.628,8.069263/2,Rotation2d.kZero);
+                topPassingTarget = new Pose2d(2.871, 6.01, Rotation2d.kZero);
+                bottomPassingTarget = new Pose2d(2.871, 2.059, Rotation2d.kZero);
                 AllianceAngleRad = 0;
         } else {
-                targetPosition = new Pose2d(11.554,8.069263/2,Rotation2d.fromDegrees(180));
+                targetPosition = new Pose2d(11.913,8.069263/2,Rotation2d.fromDegrees(180));
+                topPassingTarget = new Pose2d(13.67, 6.01, Rotation2d.kZero);
+                bottomPassingTarget = new Pose2d(13.67,2.059, Rotation2d.kZero);
                 AllianceAngleRad = Rotation2d.k180deg.getRadians();
         }
     }
 
     private void configureBindings() {
-        drivetrain.setDefaultCommand(
-                new OperatorControl(drivetrain));
+        drivetrain.setDefaultCommand(new OperatorControl(drivetrain));
 
         //m_driverController.a().onTrue(drivetrain.runOnce(() -> drivetrain.setControl(brake)));
-        m_driverController.rightBumper().and(m_driverController.leftBumper())
-                .onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
+        m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
 
-        m_driverController.leftTrigger().onTrue(new InstantCommand(() -> m_intake.switchPosition(), m_intake));
-        m_driverController.y().onTrue(new doIntake(m_intake, true));
-        m_driverController.b().onTrue(new doIntake(m_intake, false));
+        m_driverController.leftBumper().onTrue(new MoveIntake(m_intake, false).andThen(new RunIntake(m_intake, true)));
+        m_driverController.leftBumper().onFalse(new RunIntake(m_intake, false));
+        m_driverController.rightBumper().onTrue(new RunIntake(m_intake, false).andThen(new MoveIntake(m_intake, true)));
 
-        //m_driverController.y().whileTrue(new runHopper(m_hopper));
-        m_driverController.x().onTrue(new InstantCommand(() -> m_hopper.switchFeeding(), m_hopper));
 
-        m_driverController.a().onTrue(new Shoot(m_shooter, m_feeder, m_hopper));
+
+        m_driverController.rightTrigger().whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, drivetrain, true));
     }
 }

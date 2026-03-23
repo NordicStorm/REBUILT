@@ -27,7 +27,7 @@ public final class Constants {
         public static final int kRightShooterID = 11;//TODO
 
         public static final int kFeederMotorID = 10;
-        public static final int kIntakeMotorID = 12;
+        public static final int kIntakeMotorID = 0;
         public static final int kIntakePivotID = 8;
         public static final int kHopperMotorID = 21;
         public static final int kServoHubID = 3;
@@ -46,6 +46,7 @@ public final class Constants {
 
         public static final double kP_Pivot_Down = 15;
         public static final double kD_Pivot_Down = 1;
+        public static final double KG_Pivot_Down = .55;
 
         public static final double kP_Intake = 0;
         public static final double kI_Intake = 0;
