@@ -128,25 +128,25 @@ public class Shooter extends SubsystemBase {
 
     private double getShootRPSFromDistance(double distance) {
         double x = distance;
-        double result = 0.250 * x * x * x + -2.321 * x * x + 6.429 * x + -3.400; // CURVE:RPS,10:11,03/22
+        double result = -0.071*x*x + 0.529*x + 0.800; // CURVE:RPS,08:17,03/23
         return result;
     }
 
     private double getShootHoodFromDistance(double distance) {
         double x = distance;
-        double result = -0.429 * x * x + 3.171 * x + -2.200; // CURVE:Hood,10:11,03/22
+        double result = -0.429*x*x + 3.171*x + -2.200; // CURVE:Hood,08:17,03/23
         return result;
     }
 
     private double getPassRPSFromDistance(double distance) {
         double x = distance;
-        double result = 0.250 * x * x * x + -2.321 * x * x + 6.429 * x + -3.400; // CURVE:RPS,10:11,03/22
+        double result = -0.071*x*x + 0.529*x + 0.800; // CURVE:RPS,08:17,03/23
         return result;
     }
 
     private double getPassHoodFromDistance(double distance) {
         double x = distance;
-        double result = -0.429 * x * x + 3.171 * x + -2.200; // CURVE:Hood,10:11,03/22
+        double result = -0.429*x*x + 3.171*x + -2.200; // CURVE:Hood,08:17,03/23
         return result;
     }
 
@@ -164,7 +164,6 @@ public class Shooter extends SubsystemBase {
         }
 
         setShooterRPS(m_speed);
-        m_hoodServoPulseWidth = (int) SmartDashboard.getNumber("Hood Pulse Request", 1000);
         setHoodAngle(m_hoodServoPulseWidth);
 
         SmartDashboard.putNumber("Recieved number", m_hoodServoPulseWidth);
@@ -172,5 +171,6 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("Shooting Value", m_speed);
         SmartDashboard.putNumber("Hood Pulse Width", m_rightHoodServo.getPulseWidth());
         SmartDashboard.putNumber("Requested PID", m_shooterLeft.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Distance to Hub", RobotContainer.drivetrain.getDistanceToVirtualHub());
     }
 }

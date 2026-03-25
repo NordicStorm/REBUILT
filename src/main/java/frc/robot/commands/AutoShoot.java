@@ -5,13 +5,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.Util;
+import frc.robot.commands.paths.CommandPathPiece;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.Mode;
 import frc.robot.subsystems.Hopper;
 
-public class AutoShoot extends Command{
+public class AutoShoot extends Command implements CommandPathPiece{
 
     private Shooter m_shooter;
     private Feeder m_feeder;
@@ -42,13 +43,19 @@ public class AutoShoot extends Command{
 
     @Override
     public void execute() {
-        double shooterRPM = SmartDashboard.getNumber("Shooter RPS Request", 0);
+        double shooterRPS = SmartDashboard.getNumber("Shooter RPS Request", 0);
         double feederRPM = SmartDashboard.getNumber("Feeder RPS Request", 0);
-        m_shooter.setManualRPS(shooterRPM);
+        int hoodAngle = (int) SmartDashboard.getNumber("Hood Pulse Request", 1100);
+        SmartDashboard.putString("Curve Point", m_drivetrain.getDistanceToVirtualHub() + "," + shooterRPS + "," + hoodAngle);
+        m_shooter.setManualRPS(shooterRPS);
+        m_shooter.setHoodAngle(hoodAngle);
         if (m_shooter.atSetPoint()) {
             m_hopper.setRPM(feederRPM);
-            m_feeder.setRPM(shooterRPM);
-        } 
+            m_feeder.setRPM(shooterRPS);
+        } else {
+            m_hopper.setRPM(0);
+            m_feeder.setRPM(0);
+        }
     }
 
     @Override

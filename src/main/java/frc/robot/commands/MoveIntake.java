@@ -2,9 +2,10 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.commands.paths.CommandPathPiece;
 import frc.robot.subsystems.Intake;
 
-public class MoveIntake extends Command {
+public class MoveIntake extends Command implements CommandPathPiece {
 
     private Intake m_intake;
     private final boolean movingIntakeUp;
