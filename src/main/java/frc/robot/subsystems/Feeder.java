@@ -8,16 +8,13 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.FeederConstants;
 
-
 public class Feeder extends SubsystemBase {
 
-    private double m_speed = 0;
+    private boolean isFeeding = false;
 
     private final TalonFXConfiguration m_feederConfig = new TalonFXConfiguration();
     public final TalonFX m_feeder = new TalonFX(Constants.MechanismConstants.kFeederMotorID, "rio");
@@ -28,8 +25,8 @@ public class Feeder extends SubsystemBase {
         SmartDashboard.putNumber("Feeder RPS Request", 0);
 
         var feederSlot0Configs = new Slot0Configs();
-        feederSlot0Configs.kV = FeederConstants.kV; 
-        feederSlot0Configs.kP = FeederConstants.kP; 
+        feederSlot0Configs.kV = FeederConstants.kV;
+        feederSlot0Configs.kP = FeederConstants.kP;
 
         m_feederConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         m_feederConfig.CurrentLimits.SupplyCurrentLimit = 80;
@@ -41,37 +38,26 @@ public class Feeder extends SubsystemBase {
         m_feeder.optimizeBusUtilization();
     }
 
-    public void setRPM(double RPM) {
-        m_speed = RPM / 60;
-    }
-
-    private void setFeederRPM(double rpm) {
-        if (rpm == 0) {
-            m_feeder.set(rpm);
+    private void setFeeder(boolean isFeeding) {
+        if (isFeeding) {
+            double velocity = SmartDashboard.getNumber("Feeder RPS Request", 0);
+            m_feeder.setControl(velocityRequest.withVelocity(velocity));
         } else {
-            m_feeder.setControl(velocityRequest.withVelocity(rpm));
+            m_feeder.set(0);
         }
     }
 
-    public Command feed(double rpm) {
-        return Commands.startEnd(() -> this.setRPM(rpm), () -> this.setRPM(0), this);
+    public void setOn() {
+        isFeeding = true;
     }
 
-    public Command startFeed(double rpm) {
-        return Commands.run(() -> this.setRPM(rpm), this);
-    }
-
-    public Command endFeed() {
-        return Commands.run(() -> this.stop(), this);
-    }
-
-    public void stop() {
-        setRPM(0);
+    public void setOff() {
+        isFeeding = false;
     }
 
     @Override
     public void periodic() {
-        setFeederRPM(m_speed);
+        setFeeder(isFeeding);
         SmartDashboard.putNumber("Feeder Velocity", m_feeder.getVelocity().getValueAsDouble());
     }
 }

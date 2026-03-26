@@ -43,6 +43,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+    private int currentPriority = 0;
 
     public Field2d m_fieldDisplay = new Field2d();
 
@@ -50,8 +51,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.RobotCentric m_drive = new SwerveRequest.RobotCentric()
             .withDeadband(0).withRotationalDeadband(0) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.Velocity);
-
-    
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -124,7 +123,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     this));
 
     /* The SysId routine to test */
-    //private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
+    // private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -227,8 +226,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    
-
     /**
      * Runs the SysId Quasistatic test in the given direction for the routine
      * specified by {@link #m_sysIdRoutineToApply}.
@@ -236,9 +233,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param direction Direction of the SysId Quasistatic test
      * @return Command to run
      */
-    //public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-      //  return m_sysIdRoutineToApply.quasistatic(direction);
-    //}
+    // public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    // return m_sysIdRoutineToApply.quasistatic(direction);
+    // }
 
     /**
      * Runs the SysId Dynamic test in the given direction for the routine
@@ -247,9 +244,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param direction Direction of the SysId Dynamic test
      * @return Command to run
      */
-    //public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-      //  return m_sysIdRoutineToApply.dynamic(direction);
-    //}
+    // public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    // return m_sysIdRoutineToApply.dynamic(direction);
+    // }
 
     @Override
     public void periodic() {
@@ -276,7 +273,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("Vx", getState().Speeds.vxMetersPerSecond);
         SmartDashboard.putNumber("vY", getState().Speeds.vyMetersPerSecond);
         SmartDashboard.putNumber("Gyro", getGyroDegrees());
-
+        currentPriority = 0;
 
         m_fieldDisplay.setRobotPose(getState().Pose);
 
@@ -371,8 +368,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     @Override
     public void drive(ChassisSpeeds speeds) {
-        setControl(m_drive.withVelocityX(speeds.vxMetersPerSecond).withVelocityY(speeds.vyMetersPerSecond)
-                .withRotationalRate(speeds.omegaRadiansPerSecond));
+        driveWithPrivilege(speeds, 0);
     }
 
     @Override
@@ -394,13 +390,23 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public void driveWithPrivilege(ChassisSpeeds speeds, int rotationalPrivilege) {
-        setControl(m_drive.withVelocityX(speeds.vxMetersPerSecond).withVelocityY(speeds.vyMetersPerSecond)
-                .withRotationalRate(speeds.omegaRadiansPerSecond));
+        m_drive.withVelocityX(speeds.vxMetersPerSecond).withVelocityY(speeds.vyMetersPerSecond);
+        if (rotationalPrivilege >= currentPriority) {
+            m_drive.withRotationalRate(speeds.omegaRadiansPerSecond);
+            currentPriority = rotationalPrivilege;
+        }
+    }
+
+    public void rotateWithPrivilege(double rotation, int rotationalPrivilege) {
+        if (rotationalPrivilege >= currentPriority) {
+            m_drive.withRotationalRate(rotation);
+            currentPriority = rotationalPrivilege;
+        }
     }
 
     public double getDistanceToVirtualHub() {
         Pose2d currentPose = getPose();
-        return Util.distance(currentPose, RobotContainer.targetPosition);
+        return Util.distance(currentPose, RobotContainer.hubPosition);
     }
 
     public Pose2d getTargetPassPoint() {

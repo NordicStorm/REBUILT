@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AutoShoot;
+import frc.robot.commands.FullAuto;
 import frc.robot.commands.MoveIntake;
 import frc.robot.commands.OperatorControl;
 import frc.robot.commands.RunIntake;
@@ -29,6 +30,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -50,9 +52,11 @@ public class RobotContainer {
     private final Feeder m_feeder = new Feeder();
     private final Intake m_intake = new Intake();
     private final Hopper m_hopper = new Hopper();
+    private FullAuto m_autos;
+
     // private final PhotonVision fuelCamera = new PhotonVision();
     public static double shootingSpeed = .5;
-    public static Pose2d targetPosition, topPassingTarget, bottomPassingTarget;;;;;;;;;;;
+    public static Pose2d hubPosition, topPassingTarget, bottomPassingTarget;;;;;;;;;;;
     public static double AllianceAngleRad;
     public static boolean isBlue;
     // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -80,33 +84,38 @@ public class RobotContainer {
      */
     public RobotContainer() {
         // Configure the trigger bindings
+        FullAuto.putToDashboard();
         configureBindings();
+        SmartDashboard.putBoolean("Is auto initialized?", false);
+        SmartDashboard.putData("Set Auto", new InstantCommand(() -> {
+            m_autos = new FullAuto(drivetrain, m_shooter, m_feeder, m_hopper, m_intake);
+            SmartDashboard.putBoolean("Is auto initialized?", m_autos.isInitialized);
+        }).ignoringDisable(true));
         isBlue = DriverStation.getAlliance().get() == Alliance.Blue;
         if (isBlue) {
-                targetPosition = new Pose2d(4.628,8.069263/2,Rotation2d.kZero);
-                topPassingTarget = new Pose2d(2.871, 6.01, Rotation2d.kZero);
-                bottomPassingTarget = new Pose2d(2.871, 2.059, Rotation2d.kZero);
-                AllianceAngleRad = 0;
+            hubPosition = new Pose2d(4.628, 8.069263 / 2, Rotation2d.kZero);
+            topPassingTarget = new Pose2d(2.871, 6.01, Rotation2d.kZero);
+            bottomPassingTarget = new Pose2d(2.871, 2.059, Rotation2d.kZero);
+            AllianceAngleRad = 0;
         } else {
-                targetPosition = new Pose2d(11.913,8.069263/2,Rotation2d.fromDegrees(180));
-                topPassingTarget = new Pose2d(13.67, 6.01, Rotation2d.kZero);
-                bottomPassingTarget = new Pose2d(13.67,2.059, Rotation2d.kZero);
-                AllianceAngleRad = Rotation2d.k180deg.getRadians();
+            hubPosition = new Pose2d(11.913, 8.069263 / 2, Rotation2d.fromDegrees(180));
+            topPassingTarget = new Pose2d(13.67, 6.01, Rotation2d.kZero);
+            bottomPassingTarget = new Pose2d(13.67, 2.059, Rotation2d.kZero);
+            AllianceAngleRad = Rotation2d.k180deg.getRadians();
         }
     }
 
     private void configureBindings() {
         drivetrain.setDefaultCommand(new OperatorControl(drivetrain));
 
-        //m_driverController.a().onTrue(drivetrain.runOnce(() -> drivetrain.setControl(brake)));
+        // m_driverController.a().onTrue(drivetrain.runOnce(() ->
+        // drivetrain.setControl(brake)));
         m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
 
         m_driverController.leftBumper().onTrue(new MoveIntake(m_intake, false).andThen(new RunIntake(m_intake, true)));
         m_driverController.leftBumper().onFalse(new RunIntake(m_intake, false));
         m_driverController.rightBumper().onTrue(new RunIntake(m_intake, false).andThen(new MoveIntake(m_intake, true)));
 
-
-
-        m_driverController.rightTrigger().whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, drivetrain, true));
+        m_driverController.rightTrigger().whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, drivetrain, true, 0));
     }
 }

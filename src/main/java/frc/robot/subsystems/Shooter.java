@@ -110,6 +110,10 @@ public class Shooter extends SubsystemBase {
         currentMode = mode;
     }
 
+    public Mode getMode() {
+        return currentMode;
+    }
+
     public void stop() {
         currentMode = Mode.OFF;
     }

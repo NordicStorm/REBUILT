@@ -1,33 +1,30 @@
 package frc.robot.subsystems;
 
-import java.lang.annotation.Target;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.vision.Cluster;
-import frc.robot.vision.TargetClusterer;
-import frc.robot.vision.TemporalClusterSmoother;
+import frc.robot.RobotContainer;
+
 
 public class PhotonVision extends SubsystemBase {
 
     private static PhotonCamera fuelCamera;
-    private static final double CAMERA_HEIGHT_INCHES = 0; // TODO
-    private static final double CAMERA_PITCH_RADIANS = Units.degreesToRadians(0); // TODO
-
-    private List<PhotonPipelineResult> fuel = new ArrayList<PhotonPipelineResult>();
-    private final TemporalClusterSmoother clusterSmoother;
+    public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
+    public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+    public static final PhotonPoseEstimator photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
+ 
 
     public PhotonVision() {
-        fuelCamera = new PhotonCamera("FuelCam");
-        // Initialize temporal smoother: alpha=0.3, matchThresholdDeg=2.0, areaTol=1.25, maxMissedFrames=3
-        clusterSmoother = new TemporalClusterSmoother(0.3, 2.0, 1.25, 3);
+        fuelCamera = new PhotonCamera("FuelCam");;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     }
 
     public List<PhotonPipelineResult> getTargets() {
@@ -36,26 +33,11 @@ public class PhotonVision extends SubsystemBase {
 
     @Override
     public void periodic() {
-        fuel = getTargets();
-        if (!fuel.isEmpty()) {
-            var result = fuel.get(fuel.size() - 1);
-            if (result.hasTargets()) {
-                List<PhotonTrackedTarget> pts = result.getTargets();
-
-                double eps = 7.5; // degrees
-                int minPts = 3; // minimum points to form a cluster
-                double areaTol = 1.75; // 50% allowed difference
-               
-
-                List<Cluster> clusters = TargetClusterer.clusterByAngularAndArea(pts, eps, minPts, areaTol);
-                // run temporal smoothing (keeps state across frames inside clusterSmoother)
-                var smoothed = clusterSmoother.update(clusters);
-                SmartDashboard.putString("PhotonVision", String.format("Found %d clusters", clusters.size()));
-                SmartDashboard.putString("PhotonVisionSmoothed", String.format("Found %d smoothed", smoothed.size()));
-                for (int i = 0; i < smoothed.size(); i++) {
-                    TemporalClusterSmoother.SmoothedCluster cluster = smoothed.get(i);
-                    SmartDashboard.putString("PhotonVisionSmoothedCluster: " + i, "Size: " + cluster.size + ", Area: " + String.format("%.2f", cluster.area) + ", Pitch: " + String.format("%.2f", cluster.pitch) + ", Yaw: " + String.format("%.2f", cluster.yaw));
-                }
+        var results = fuelCamera.getAllUnreadResults();
+        for (var result : results) {
+            var multiTagResult = photonEstimator.estimateCoprocMultiTagPose(result);
+            if (multiTagResult.isPresent()) {
+                RobotContainer.drivetrain.addVisionMeasurement(multiTagResult.get().estimatedPose.toPose2d(), multiTagResult.get().timestampSeconds);
             }
         }
     }

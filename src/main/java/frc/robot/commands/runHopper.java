@@ -1,6 +1,5 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Hopper;
 
@@ -14,17 +13,16 @@ public class runHopper extends Command{
 
     @Override
     public void initialize() {
-        m_hopper.setRPM(0);
+        m_hopper.setOff();
     }
 
     @Override
     public void execute() {
-        double hopperRPM = SmartDashboard.getNumber("Hopper RPS Request", -15);
-        m_hopper.setRPM(hopperRPM);
+        m_hopper.setOn();
     }
 
     @Override
     public void end(boolean interrupted) {
-        m_hopper.stop();
+        m_hopper.setOff();
     }
 }

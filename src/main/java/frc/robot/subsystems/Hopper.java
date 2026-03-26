@@ -10,8 +10,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.HopperConstants;;
@@ -20,16 +18,12 @@ import frc.robot.Constants.HopperConstants;;
 
 public class Hopper extends SubsystemBase {
 
-    private double m_speed = 0;
-
     private final TalonFXConfiguration m_hopperConfig = new TalonFXConfiguration();
     public final TalonFX m_hopper = new TalonFX(Constants.MechanismConstants.kHopperMotorID, "rio");
     final VelocityVoltage velocityRequest = new VelocityVoltage(-20);
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
 
     private boolean isFeeding = false;
-
-
 
     public Hopper() {
         SmartDashboard.putNumber("Hopper RPS Request", -20);
@@ -48,49 +42,25 @@ public class Hopper extends SubsystemBase {
         m_hopper.optimizeBusUtilization();
     }
 
-    public void setRPM(double RPM) {
-        m_speed = RPM / 60;
-    }
-
-    private void setHopperRPM(double rpm) {
-        if (rpm == 0) {
-            m_hopper.set(rpm);
-        } else {
-            m_hopper.setControl(velocityRequest);
-        }
-    }
-
-    public Command feed(double rpm) {
-        return Commands.startEnd(() -> this.setHopperRPM(rpm), () -> this.setHopperRPM(0), this);
-    }
-
-    public void stop() {
-        setRPM(0);
-    }
-
     private void setHopper(boolean isFeeding) {
         if (isFeeding) {
-            m_hopper.setControl(velocityRequest);
+            double velocity = SmartDashboard.getNumber("Hopper RPS Request", 0);
+            m_hopper.setControl(velocityRequest.withVelocity(velocity));
         } else {
             m_hopper.set(0);
         }
     }
 
-    public void switchFeeding() {
-        isFeeding = !isFeeding;
+    public void setOn() {
+        isFeeding = true;
     }
 
-    public Command startHopper() {
-        return Commands.run(() -> this.setHopper(true), this);
-    }
-
-    public Command endHopper() {
-        return Commands.run(()-> this.setHopper(false), this);
+    public void setOff() {
+        isFeeding = false;
     }
 
     @Override
     public void periodic() {
-        //setHopperRPM(m_speed);
         setHopper(isFeeding);
         SmartDashboard.putBoolean("Is feeding", isFeeding);
         SmartDashboard.putNumber("Hopper Velocity", m_hopper.getVelocity().getValueAsDouble());
