@@ -28,18 +28,18 @@ public class Shooter extends SubsystemBase {
     private final TalonFXConfiguration m_shooterConfig = new TalonFXConfiguration();
     public final TalonFX m_shooterLeft = new TalonFX(MechanismConstants.kLeftShooterID, "rio");
     public final TalonFX m_shooterMiddle = new TalonFX(MechanismConstants.kMiddleShooterID, "rio");
-    public final TalonFX m_shooterRight = new TalonFX(MechanismConstants.kLeftShooterID, "rio");
+    public final TalonFX m_shooterRight = new TalonFX(MechanismConstants.kRightShooterID, "rio");
 
     private final ServoHub m_ServoHub = new ServoHub(MechanismConstants.kServoHubID);
     private final ServoHubConfig m_servoHubConfig = new ServoHubConfig();
-    private final ServoChannel m_leftHoodServo = m_ServoHub.getServoChannel(ChannelId.kChannelId1);
-    private final ServoChannel m_rightHoodServo = m_ServoHub.getServoChannel(ChannelId.kChannelId2);
+    private final ServoChannel m_leftHoodServo = m_ServoHub.getServoChannel(ChannelId.kChannelId3);
+    private final ServoChannel m_rightHoodServo = m_ServoHub.getServoChannel(ChannelId.kChannelId4);
 
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
 
     private double m_speed = 0;
     private Mode currentMode = Mode.OFF;
-    private int m_hoodServoPulseWidth = 1100; // TODO
+    private int m_hoodServoPulseWidth = 1100;
 
     public enum Mode {
         OFF,
@@ -57,7 +57,7 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("Hood Pulse Request", 1100);
 
         var shooterSlot0Configs = new Slot0Configs();
-        shooterSlot0Configs.kV = ShooterConstants.kF;
+        shooterSlot0Configs.kV = ShooterConstants.kV;
         shooterSlot0Configs.kP = ShooterConstants.kP;
         shooterSlot0Configs.kI = ShooterConstants.kI;
         shooterSlot0Configs.kD = ShooterConstants.kD;
@@ -77,7 +77,10 @@ public class Shooter extends SubsystemBase {
         m_shooterRight.optimizeBusUtilization();
         m_shooterMiddle.optimizeBusUtilization();
 
-        m_servoHubConfig.channel0
+        m_servoHubConfig.channel3
+                .pulseRange(1000, 1500, 2000)
+                .disableBehavior(ServoChannelConfig.BehaviorWhenDisabled.kSupplyPower);
+        m_servoHubConfig.channel4
                 .pulseRange(1000, 1500, 2000)
                 .disableBehavior(ServoChannelConfig.BehaviorWhenDisabled.kSupplyPower);
 
@@ -101,8 +104,8 @@ public class Shooter extends SubsystemBase {
             m_shooterRight.set(0);
         } else {
             m_shooterLeft.setControl(velocityRequest.withVelocity(rps).withSlot(0));
-            m_shooterLeft.setControl(velocityRequest.withVelocity(rps).withSlot(0));
-            m_shooterLeft.setControl(velocityRequest.withVelocity(rps).withSlot(0));
+            m_shooterMiddle.setControl(velocityRequest.withVelocity(rps).withSlot(0));
+            m_shooterRight.setControl(velocityRequest.withVelocity(rps).withSlot(0));
         }
     }
 
@@ -132,25 +135,25 @@ public class Shooter extends SubsystemBase {
 
     private double getShootRPSFromDistance(double distance) {
         double x = distance;
-        double result = -0.071*x*x + 0.529*x + 0.800; // CURVE:RPS,08:17,03/23
+        double result = -0.071 * x * x + 0.529 * x + 0.800; // CURVE:RPS,08:17,03/23
         return result;
     }
 
     private double getShootHoodFromDistance(double distance) {
         double x = distance;
-        double result = -0.429*x*x + 3.171*x + -2.200; // CURVE:Hood,08:17,03/23
+        double result = -0.429 * x * x + 3.171 * x + -2.200; // CURVE:Hood,08:17,03/23
         return result;
     }
 
     private double getPassRPSFromDistance(double distance) {
         double x = distance;
-        double result = -0.071*x*x + 0.529*x + 0.800; // CURVE:RPS,08:17,03/23
+        double result = -0.071 * x * x + 0.529 * x + 0.800; // CURVE:RPS,08:17,03/23
         return result;
     }
 
     private double getPassHoodFromDistance(double distance) {
         double x = distance;
-        double result = -0.429*x*x + 3.171*x + -2.200; // CURVE:Hood,08:17,03/23
+        double result = -0.429 * x * x + 3.171 * x + -2.200; // CURVE:Hood,08:17,03/23
         return result;
     }
 
@@ -173,7 +176,8 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("Recieved number", m_hoodServoPulseWidth);
         SmartDashboard.putNumber("Shooter Velocity", m_shooterLeft.getVelocity().getValueAsDouble());
         SmartDashboard.putNumber("Shooting Value", m_speed);
-        SmartDashboard.putNumber("Hood Pulse Width", m_rightHoodServo.getPulseWidth());
+        SmartDashboard.putNumber("Right Hood Pulse Width", m_rightHoodServo.getPulseWidth());
+        SmartDashboard.putNumber("Left Hood Pulse Width", m_leftHoodServo.getPulseWidth());
         SmartDashboard.putNumber("Requested PID", m_shooterLeft.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Distance to Hub", RobotContainer.drivetrain.getDistanceToVirtualHub());
     }

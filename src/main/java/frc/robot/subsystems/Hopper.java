@@ -20,7 +20,7 @@ public class Hopper extends SubsystemBase {
 
     private final TalonFXConfiguration m_hopperConfig = new TalonFXConfiguration();
     public final TalonFX m_hopper = new TalonFX(Constants.MechanismConstants.kHopperMotorID, "rio");
-    final VelocityVoltage velocityRequest = new VelocityVoltage(-20);
+    final VelocityVoltage velocityRequest = new VelocityVoltage(-15);
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
 
     private boolean isFeeding = false;

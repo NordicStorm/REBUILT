@@ -79,7 +79,7 @@ public class AutoShoot extends Command implements CommandPathPiece {
     @Override
     public void end(boolean interrupted) {
         m_feeder.setOff();
-        // m_shooter.stop();
+        m_shooter.stop();
         m_hopper.setOff();
     }
 

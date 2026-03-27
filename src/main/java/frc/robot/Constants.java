@@ -23,21 +23,21 @@ public final class Constants {
 
     public static class MechanismConstants {
         public static final int kLeftShooterID = 11;
-        public static final int kMiddleShooterID = 11; //TODO
-        public static final int kRightShooterID = 11;//TODO
+        public static final int kMiddleShooterID = 12; 
+        public static final int kRightShooterID = 13;
 
         public static final int kFeederMotorID = 10;
-        public static final int kIntakeMotorID = 0;
+        public static final int kIntakeMotorID = 1;
         public static final int kIntakePivotID = 8;
         public static final int kHopperMotorID = 21;
         public static final int kServoHubID = 3;
     }
 
     public static class ShooterConstants {
-        public static final double kP = 0;
+        public static final double kP = 0.5;
         public static final double kI = 0;
         public static final double kD = 0;
-        public static final double kF = 0;
+        public static final double kV = 0.12;
     }
 
     public static class IntakeConstants {

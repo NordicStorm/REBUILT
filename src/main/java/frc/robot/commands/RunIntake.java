@@ -23,4 +23,8 @@ public class RunIntake extends Command implements CommandPathPiece{
             m_intake.stop();
         }
     }
+
+    public boolean isFinished() {
+        return true;
+    }
 }
