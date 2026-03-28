@@ -26,7 +26,7 @@ public class Hopper extends SubsystemBase {
     private boolean isFeeding = false;
 
     public Hopper() {
-        SmartDashboard.putNumber("Hopper RPS Request", -20);
+        SmartDashboard.putNumber("Hopper RPS Request", -15);
 
         var hopperSlot0Configs = new Slot0Configs();
         hopperSlot0Configs.kV = HopperConstants.kV; 
@@ -44,7 +44,7 @@ public class Hopper extends SubsystemBase {
 
     private void setHopper(boolean isFeeding) {
         if (isFeeding) {
-            double velocity = SmartDashboard.getNumber("Hopper RPS Request", 0);
+            double velocity = SmartDashboard.getNumber("Hopper RPS Request", -15);
             m_hopper.setControl(velocityRequest.withVelocity(velocity));
         } else {
             m_hopper.set(0);

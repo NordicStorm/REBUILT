@@ -22,7 +22,7 @@ public class Feeder extends SubsystemBase {
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
 
     public Feeder() {
-        SmartDashboard.putNumber("Feeder RPS Request", 0);
+        SmartDashboard.putNumber("Feeder RPS Request", 40);
 
         var feederSlot0Configs = new Slot0Configs();
         feederSlot0Configs.kV = FeederConstants.kV;
@@ -40,7 +40,7 @@ public class Feeder extends SubsystemBase {
 
     private void setFeeder(boolean isFeeding) {
         if (isFeeding) {
-            double velocity = SmartDashboard.getNumber("Feeder RPS Request", 0);
+            double velocity = SmartDashboard.getNumber("Feeder RPS Request", 40);
             m_feeder.setControl(velocityRequest.withVelocity(velocity));
         } else {
             m_feeder.set(0);

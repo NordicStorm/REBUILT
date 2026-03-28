@@ -53,8 +53,8 @@ public class Shooter extends SubsystemBase {
     //
 
     public Shooter() {
-        SmartDashboard.putNumber("Shooter RPS Request", 0);
-        SmartDashboard.putNumber("Hood Pulse Request", 1100);
+        SmartDashboard.putNumber("Shooter RPS Request", -55);
+        SmartDashboard.putNumber("Hood Pulse Request", 1430);
 
         var shooterSlot0Configs = new Slot0Configs();
         shooterSlot0Configs.kV = ShooterConstants.kV;

@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
+import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -32,22 +33,24 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intakePivot = new TalonFX(MechanismConstants.kIntakePivotID, "rio");
     private final PositionVoltage upPositionRequest = new PositionVoltage(-.01);
     private final PositionVoltage downPositionRequest = new PositionVoltage(-.29);
+    private final PositionVoltage agitatePositionRequest = new PositionVoltage(-.29).withSlot(2);
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
 
     private double m_speed = 0;
     private boolean setIntakeUp = true;
+    private boolean agitate = false;
+    private long agitateStartTime = 0;
 
     public Intake() {
         SmartDashboard.putNumber("Intake RPS Request", 0);
 
         var intakeSlot0Config = new Slot0Configs();
-        intakeSlot0Config.kS = IntakeConstants.kS_Intake; 
+        intakeSlot0Config.kS = IntakeConstants.kS_Intake;
         intakeSlot0Config.kP = IntakeConstants.kP_Intake;
         intakeSlot0Config.kI = IntakeConstants.kI_Intake;
         intakeSlot0Config.kD = IntakeConstants.kD_Intake;
         intakeSlot0Config.kV = .1;
-
 
         m_intakeConfig
                 .withMotorOutput(
@@ -78,6 +81,13 @@ public class Intake extends SubsystemBase {
         intakePivotSlot1Config.withGravityType(GravityTypeValue.Arm_Cosine);
         intakePivotSlot1Config.withGravityArmPositionOffset(.25);
 
+        var intakePivotSlot2Config = new Slot2Configs(); // Agitate motion config
+        intakePivotSlot2Config.kP = IntakeConstants.kP_Agitate;
+        intakePivotSlot2Config.kD = IntakeConstants.kD_Agitate;
+        intakePivotSlot2Config.kG = IntakeConstants.kG_Agitate;
+        intakePivotSlot2Config.withGravityType(GravityTypeValue.Arm_Cosine);
+        intakePivotSlot2Config.withGravityArmPositionOffset(.25);    
+
         m_intakePivotConfig
                 .withMotorOutput(
                         new MotorOutputConfigs()
@@ -89,8 +99,7 @@ public class Intake extends SubsystemBase {
                                 .withStatorCurrentLimitEnable(true)
                                 .withSupplyCurrentLimitEnable(true))
                 .withSlot0(intakePivotSlot0Config)
-                .withSlot1(intakePivotSlot1Config)
-                .Feedback.withSensorToMechanismRatio(25);
+                .withSlot1(intakePivotSlot1Config).Feedback.withSensorToMechanismRatio(25);
 
         m_intakePivot.optimizeBusUtilization();
 
@@ -125,7 +134,8 @@ public class Intake extends SubsystemBase {
     }
 
     private void setIntakePivotPosition(boolean up) {
-        m_intakePivot.setControl(up ? upPositionRequest.withSlot(0) : downPositionRequest.withSlot(1)); // First should be 0
+        m_intakePivot.setControl(up ? upPositionRequest.withSlot(0) : downPositionRequest.withSlot(1)); // First should
+                                                                                                        // be 0
     }
 
     public void setRPM(double RPM) {
@@ -162,8 +172,28 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         setIntakeRPM(m_speed);
-        setIntakePivotPosition(setIntakeUp);
+        if (agitate) {
+            long elapsedTime = System.currentTimeMillis() - agitateStartTime;
+            if (elapsedTime < 1500) {
+            } else {
+                // Switch between forward and reverse every 1.5 seconds
+                if ((elapsedTime / 1500) % 2 == 0) {
+                    m_intakePivot.setControl(agitatePositionRequest.withPosition(-0.05));
+                } else {
+                    m_intakePivot.setControl(agitatePositionRequest.withPosition(-0.2));
+                }
+            }
+        } else {
+            setIntakePivotPosition(setIntakeUp);
+        }
         SmartDashboard.putNumber("Intake Position Request", setIntakeUp ? 0 : -.3);
         SmartDashboard.putNumber("Intake Pivot Position", getIntakePivotLocation());
+    }
+
+    public void setAgitateMode(boolean agitate) {
+        this.agitate = agitate;
+        if (agitate) {
+            agitateStartTime = System.currentTimeMillis();
+        }
     }
 }

@@ -79,7 +79,7 @@ public class FullAuto extends SequentialCommandGroup {
         pathA.addWaypoint(4.531, 7.451);
         pathA.addParallelCommand(new SetShooter(shooter, Mode.HUB));
         pathA.addWaypoint(3.271, 7.560);
-        pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, drivetrain, true, 2000)); // nomove
+        pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
         pathA.addParallelCommand(new SetShooter(shooter, Mode.OFF));
         pathA.addWaypoint(4.725, 7.524);
         pathA.addParallelCommand(new RunIntake(intake, true));
@@ -91,7 +91,7 @@ public class FullAuto extends SequentialCommandGroup {
         pathA.addWaypoint(4.531, 7.451);
         pathA.addParallelCommand(new SetShooter(shooter, Mode.HUB));
         pathA.addWaypoint(3.271, 7.560);
-        pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, drivetrain, true, 2000)); // nomove
+        pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
         pathA.addParallelCommand(new SetShooter(shooter, Mode.OFF));
         pathA.addStop();
 

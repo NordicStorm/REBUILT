@@ -54,7 +54,7 @@ public class RobotContainer {
     private final Hopper m_hopper = new Hopper();
     private FullAuto m_autos;
 
-    // private final PhotonVision fuelCamera = new PhotonVision();
+    private final PhotonVision aprilTagCam = new PhotonVision();
     public static double shootingSpeed = .5;
     public static Pose2d hubPosition, topPassingTarget, bottomPassingTarget;;;;;;;;;;;
     public static double AllianceAngleRad;
@@ -112,12 +112,12 @@ public class RobotContainer {
         // drivetrain.setControl(brake)));
         m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero)));
 
-        m_driverController.leftBumper().onTrue(new MoveIntake(m_intake, false).andThen(new RunIntake(m_intake, true)));
+        m_driverController.leftBumper().onTrue(new MoveIntake(m_intake , false).andThen(new RunIntake(m_intake, true)));
         m_driverController.leftBumper().onFalse(new RunIntake(m_intake, false));
         m_driverController.rightBumper().onTrue(new
          RunIntake(m_intake, false).andThen(new MoveIntake(m_intake, true)));
-        m_driverController.a().onTrue(new InstantCommand(() -> m_shooter.setHoodAngle((int) SmartDashboard.getNumber("Hood Pulse Request", 1100))));
+        m_driverController.a().onTrue(new InstantCommand(() -> m_shooter.setHoodAngle((int) SmartDashboard.getNumber("Hood Pulse Request", 1430))));
 
-        m_driverController.rightTrigger().whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, drivetrain, true, 0));
+        m_driverController.rightTrigger().whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, true, 0));
     }
 }

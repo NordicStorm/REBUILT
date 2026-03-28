@@ -13,23 +13,26 @@ import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.Mode;
 import frc.robot.subsystems.Hopper;
+import frc.robot.subsystems.Intake;
 
 public class AutoShoot extends Command implements CommandPathPiece {
 
     private Shooter m_shooter;
     private Feeder m_feeder;
     private Hopper m_hopper;
+    private Intake m_intake;
     private CommandSwerveDrivetrain m_drivetrain;
     private boolean isHub;
     private long timeToRun;
     private long endTime;
     private ProfiledPIDController PID;
 
-    public AutoShoot(Shooter shooter, Feeder feeder, Hopper hopper, CommandSwerveDrivetrain drivetrain, boolean isHub,
+    public AutoShoot(Shooter shooter, Feeder feeder, Hopper hopper, Intake intake, CommandSwerveDrivetrain drivetrain, boolean isHub,
             long timeToRun) {
         this.m_feeder = feeder;
         this.m_shooter = shooter;
         this.m_hopper = hopper;
+        this.m_intake = intake;
         this.m_drivetrain = drivetrain;
         this.isHub = isHub;
         this.timeToRun = timeToRun;
@@ -51,12 +54,13 @@ public class AutoShoot extends Command implements CommandPathPiece {
         }
 
         this.endTime = System.currentTimeMillis() + timeToRun;
+        m_intake.setAgitateMode(true);
     }
 
     @Override
     public void execute() {
-        double shooterRPS = SmartDashboard.getNumber("Shooter RPS Request", 0);
-        int hoodAngle = (int) SmartDashboard.getNumber("Hood Pulse Request", 1100);
+        double shooterRPS = SmartDashboard.getNumber("Shooter RPS Request", -55);
+        int hoodAngle = (int) SmartDashboard.getNumber("Hood Pulse Request", 1430);
         SmartDashboard.putString("Curve Point",
                 m_drivetrain.getDistanceToVirtualHub() + "," + shooterRPS + "," + hoodAngle);
         m_shooter.setManualRPS(shooterRPS);
@@ -81,6 +85,7 @@ public class AutoShoot extends Command implements CommandPathPiece {
         m_feeder.setOff();
         m_shooter.stop();
         m_hopper.setOff();
+        m_intake.setAgitateMode(false);
     }
 
     public double getAngleToTarget() {

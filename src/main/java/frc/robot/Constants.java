@@ -48,6 +48,10 @@ public final class Constants {
         public static final double kD_Pivot_Down = 1;
         public static final double KG_Pivot_Down = .55;
 
+        public static final double kP_Agitate = 20;
+        public static final double kD_Agitate = .5;
+        public static final double kG_Agitate = .55;        
+
         public static final double kP_Intake = 0;
         public static final double kI_Intake = 0;
         public static final double kD_Intake = 0;
