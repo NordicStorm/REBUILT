@@ -19,8 +19,8 @@ import frc.robot.RobotContainer;
 public class PhotonVision extends SubsystemBase {
 
     private static PhotonCamera fuelCamera;
-    public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(0.5, 0.0, 0.5),
-            new Rotation3d(0, 0, 0));
+    public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(0, 0.0, 0.508),
+            new Rotation3d(0, Math.toRadians(80), 0));
     public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
     public static final PhotonPoseEstimator photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
 

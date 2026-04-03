@@ -273,6 +273,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("Vx", getState().Speeds.vxMetersPerSecond);
         SmartDashboard.putNumber("vY", getState().Speeds.vyMetersPerSecond);
         SmartDashboard.putNumber("Gyro", getGyroDegrees());
+        SmartDashboard.putNumber("Gyro2", getPigeon2().getYaw().getValueAsDouble());
         currentPriority = 0;
 
         m_fieldDisplay.setRobotPose(getState().Pose);

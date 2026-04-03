@@ -99,7 +99,8 @@ public class Intake extends SubsystemBase {
                                 .withStatorCurrentLimitEnable(true)
                                 .withSupplyCurrentLimitEnable(true))
                 .withSlot0(intakePivotSlot0Config)
-                .withSlot1(intakePivotSlot1Config).Feedback.withSensorToMechanismRatio(25);
+                .withSlot1(intakePivotSlot1Config)
+                .withSlot2(intakePivotSlot2Config).Feedback.withSensorToMechanismRatio(25);
 
         m_intakePivot.optimizeBusUtilization();
 
@@ -172,15 +173,17 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         setIntakeRPM(m_speed);
-        if (agitate) {
+        if (agitate && m_speed == 0) {
             long elapsedTime = System.currentTimeMillis() - agitateStartTime;
-            if (elapsedTime < 1500) {
+            if (elapsedTime < 2500) {
             } else {
                 // Switch between forward and reverse every 1.5 seconds
                 if ((elapsedTime / 1500) % 2 == 0) {
                     m_intakePivot.setControl(agitatePositionRequest.withPosition(-0.05));
+                    SmartDashboard.putBoolean("Agitate is up", true);
                 } else {
                     m_intakePivot.setControl(agitatePositionRequest.withPosition(-0.2));
+                    SmartDashboard.putBoolean("Agitate is up", false);
                 }
             }
         } else {
