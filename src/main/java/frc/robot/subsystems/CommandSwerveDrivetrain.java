@@ -44,6 +44,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
     private int currentPriority = 0;
+    private boolean isLocked = false;
 
     public Field2d m_fieldDisplay = new Field2d();
 
@@ -51,6 +52,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.RobotCentric m_drive = new SwerveRequest.RobotCentric()
             .withDeadband(0).withRotationalDeadband(0) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.Velocity);
+    private final SwerveRequest.SwerveDriveBrake m_brake = new SwerveRequest.SwerveDriveBrake();
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -287,7 +289,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
-        setControl(m_drive);
+        if (isLocked) {
+            setControl(m_brake);
+        } else {
+            setControl(m_drive);
+        }
     }
 
     private void startSimThread() {
@@ -387,6 +393,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public void resetGyro() {
+        // getPigeon2().reset();
         resetRotation(Rotation2d.kZero);
     }
 
@@ -418,5 +425,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public double getDistanceToPassPoint() {
         Pose2d currentPose = getPose();
         return Util.distance(currentPose, getTargetPassPoint());
+    }
+
+    public void setLockedMode(boolean locked) {
+        this.isLocked = locked;
     }
 }

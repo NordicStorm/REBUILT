@@ -30,7 +30,7 @@ public class OperatorControl extends Command {
 
         double forward = -controller.getLeftY();
         double sideways = -controller.getLeftX();
-        double rot = controller.getRightX();
+        double rot = -controller.getRightX();
 
         double throttle = 0.5;
         throttle = Util.map(throttle, 1, -1, 0.1, 1);

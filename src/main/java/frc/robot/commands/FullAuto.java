@@ -49,62 +49,111 @@ public class FullAuto extends SequentialCommandGroup {
         // !WAYFINDER_INFO: {"trackWidth":0.864,"gameName":"Rebuilt"}
         boolean doLastPart = SmartDashboard.getBoolean("DoLastPart?", true);
         boolean isBlue = DriverStation.getAlliance().get() == Alliance.Blue;
-        drivetrain.resetRotation(drivetrain.getOperatorForwardDirection().plus(Rotation2d.fromDegrees(0)));
 
         boolean isLeft = chooser.getSelected().equals("Left");
         boolean isCenter = chooser.getSelected().equals("Center");
         boolean isRight = chooser.getSelected().equals("Right");
 
-        RobotContainer.drivetrain.resetAngle();
-
         DriveTrainConfig config = RobotContainer.drivetrain.getConfig().makeClone();
-        config.maxVelocity = 4;
-        config.maxAcceleration = 4;
+        config.maxVelocity = 1;
+        config.maxAcceleration = 2;
         config.maxCentripetalAcceleration = 11;
         config.maxAngularAcceleration = 8;
         config.maxAnglularVelocity = 12;
+        double angleAwayFromWall;
+        double angleTowardsFuel;
 
-        MultiPartPath pathA = new MultiPartPath(RobotContainer.drivetrain, config, null);
-        pathA.addWaypoint(4.688, 7.499);
-        pathA.addWaypoint(5.658, 7.451);
-        pathA.addParallelCommand(new MoveIntake(intake, false));
-        pathA.setHeading(-90);
-        pathA.addWaypoint(7.754, 7.221);
-        pathA.addParallelCommand(new RunIntake(intake, true));
-        pathA.addWaypoint(7.778, 4.967);
-        pathA.addWaypoint(7.136, 4.919);
-        pathA.addWaypoint(6.457, 5.185);
-        pathA.addParallelCommand(new RunIntake(intake, false));
-        pathA.addWaypoint(5.852, 7.512);
-        pathA.addWaypoint(4.531, 7.451);
-        pathA.addParallelCommand(new SetShooter(shooter, Mode.HUB));
-        pathA.addWaypoint(3.271, 7.560);
-        pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
-        pathA.addParallelCommand(new SetShooter(shooter, Mode.OFF));
-        pathA.addWaypoint(4.725, 7.524);
-        pathA.addParallelCommand(new RunIntake(intake, true));
-        pathA.addWaypoint(7.415, 7.378);
-        pathA.addWaypoint(7.584, 5.403);
-        pathA.addWaypoint(6.457, 5.185);
-        pathA.addParallelCommand(new RunIntake(intake, false));
-        pathA.addWaypoint(5.852, 7.512);
-        pathA.addWaypoint(4.531, 7.451);
-        pathA.addParallelCommand(new SetShooter(shooter, Mode.HUB));
-        pathA.addWaypoint(3.271, 7.560);
-        pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
-        pathA.addParallelCommand(new SetShooter(shooter, Mode.OFF));
-        pathA.addStop();
-
-        if (!isBlue) {
-            pathA.flipAllX();
-            pathA.flipAllY();
+        if (isBlue) {
+            angleAwayFromWall = 0;
+            if (isLeft) {
+                angleTowardsFuel = -90;
+            } else {
+                angleTowardsFuel = 90;
+            }
+        } else {
+            angleAwayFromWall = 180;
+            if (isLeft) {
+                angleTowardsFuel = 90;
+            } else {
+                angleTowardsFuel = -90;
+            }
         }
+        if (isCenter) {
+            drivetrain.resetRotation(Rotation2d.fromDegrees(angleAwayFromWall));
 
-        if (!isLeft) {
-            pathA.flipAllY();
+            MultiPartPath pathB = new MultiPartPath(RobotContainer.drivetrain, config, null);
+            pathB.resetPosition(1.623, 3.973);
+            pathB.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
+            pathB.addSequentialCommand(new SetShooter(shooter, Mode.OFF)); // nomove
+            pathB.addWaypoint(1.804, 4.761);
+            pathB.addParallelCommand(new MoveIntake(intake, false));
+            pathB.addWaypoint(1.950, 5.318);
+            pathB.addWaypoint(1.804, 6.033);
+            pathB.addParallelCommand(new RunIntake(intake, true));
+            pathB.addWaypoint(0.593, 5.961);
+            pathB.addParallelCommand(new SetShooter(shooter, Mode.HUB));
+            pathB.addWaypoint(1.926, 5.852);
+            pathB.addWaypoint(1.804, 4.034);
+            pathB.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
+            pathB.addSequentialCommand(new SetShooter(shooter, Mode.OFF)); // nomove
+            pathB.addStop();
+
+            if (!isBlue) {
+                pathB.flipAllX();
+                pathB.flipAllY();
+            }
+
+            addCommands(pathB.finalizePath());
+        } else {
+            drivetrain.resetRotation(Rotation2d.fromDegrees(angleTowardsFuel));
+
+            MultiPartPath pathA = new MultiPartPath(RobotContainer.drivetrain, config, null);
+            pathA.resetPosition(4.688, 7.499);
+            pathA.addWaypoint(5.658, 7.451);
+            pathA.addParallelCommand(new MoveIntake(intake, false));
+            pathA.addWaypoint(7.754, 7.221);
+            pathA.addParallelCommand(new RunIntake(intake, true));
+            pathA.addWaypoint(7.778, 4.967);
+            pathA.addWaypoint(7.136, 4.919);
+            pathA.addWaypoint(6.457, 5.185);
+            pathA.addParallelCommand(new RunIntake(intake, false));
+            pathA.setHeading(angleAwayFromWall);
+            pathA.addWaypoint(5.852, 7.512);
+            pathA.addWaypoint(4.688, 7.572);
+            pathA.addParallelCommand(new SetShooter(shooter, Mode.HUB));
+            pathA.addWaypoint(3.271, 7.560);
+            pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
+            pathA.addSequentialCommand(new SetShooter(shooter, Mode.OFF)); // nomove
+            pathA.setHeading(angleAwayFromWall);
+            pathA.addWaypoint(4.725, 7.524);
+            pathA.addParallelCommand(new RunIntake(intake, true));
+            pathA.addWaypoint(6.324, 7.451);
+            pathA.setHeading(angleTowardsFuel);
+            pathA.addWaypoint(7.415, 7.378);
+            pathA.addWaypoint(7.584, 5.403);
+            pathA.addWaypoint(6.457, 5.185);
+            pathA.addParallelCommand(new RunIntake(intake, false));
+            pathA.setHeading(angleAwayFromWall);
+            pathA.addWaypoint(5.852, 7.512);
+            pathA.addWaypoint(4.652, 7.560);
+            pathA.addParallelCommand(new SetShooter(shooter, Mode.HUB));
+            pathA.addWaypoint(3.271, 7.560);
+            pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
+            pathA.addSequentialCommand(new SetShooter(shooter, Mode.OFF)); // nomove
+            pathA.addStop();
+
+            if (!isBlue) {
+                pathA.flipAllX();
+                pathA.flipAllY();
+            }
+
+            if (!isLeft) {
+                pathA.flipAllY();
+            }
+
+            addCommands(pathA.finalizePath());
         }
-        
-        addCommands(pathA.finalizePath());
         isInitialized = true;
+
     }
 }

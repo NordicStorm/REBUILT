@@ -66,7 +66,7 @@ public class Shooter extends SubsystemBase {
 
         m_shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         m_shooterConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        m_shooterConfig.CurrentLimits.SupplyCurrentLimit = 80;
+        m_shooterConfig.CurrentLimits.SupplyCurrentLimit = 30;
         m_shooterConfig.Slot0 = shooterSlot0Configs;
 
         m_shooterLeft.getConfigurator().apply(m_shooterConfig);
@@ -135,25 +135,25 @@ public class Shooter extends SubsystemBase {
 
     private double getShootRPSFromDistance(double distance) {
         double x = distance;
-        double result = -1.424*x*x + -1.477*x + -40.850; // CURVE:RPS,06:45,04/02
+        double result = -0.860*x*x + -3.925*x + -38.516; // CURVE:RPS,12:56,04/03
         return result;
     }
 
     private double getShootHoodFromDistance(double distance) {
         double x = distance;
-        double result = 0.000*x*x + -0.000*x + 1430.000; // CURVE:Hood,06:45,04/02
+        double result = -0.000*x*x + 0.000*x + 1430.000; // CURVE:Hood,12:56,04/03
         return result;
     }
 
     private double getPassRPSFromDistance(double distance) {
         double x = distance;
-        double result = -1.424*x*x + -1.477*x + -40.850; // CURVE:RPS,06:45,04/02
+        double result = -0.430*x*x + -1.963*x + -19.258; // CURVE:passRPS,03:41,04/04
         return result;
     }
 
     private double getPassHoodFromDistance(double distance) {
         double x = distance;
-        double result = 0.000*x*x + -0.000*x + 1430.000; // CURVE:Hood,06:45,04/02
+        double result = -0.000*x*x + 0.000*x + 1430.000; // CURVE:passHood,03:41,04/04
         return result;
     }
 

@@ -52,10 +52,10 @@ public final class Constants {
         public static final double kD_Agitate = .5;
         public static final double kG_Agitate = .55;        
 
-        public static final double kP_Intake = 0;
+        public static final double kP_Intake = 0.25;
         public static final double kI_Intake = 0;
         public static final double kD_Intake = 0;
-        public static final double kS_Intake = 0;
+        public static final double kV_Intake = 0.112;
     }
 
     public static class HopperConstants {

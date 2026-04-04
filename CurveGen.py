@@ -171,7 +171,7 @@ def load_curves():
 pygame.init()
 font = pygame.font.SysFont("Arial", 10)
 point_colors = [COLORS['red'], COLORS['green'], COLORS['blue'], COLORS['purple'], COLORS['orange'], COLORS['yellow']]
-store_path = r".\shootercurve.csv"
+store_path = r".\passingcurve.csv"
 file_path =  r".\src\main\java\frc\robot\subsystems\Shooter.java"
 curves = load_curves()
 

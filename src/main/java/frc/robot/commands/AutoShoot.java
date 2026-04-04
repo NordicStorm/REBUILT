@@ -36,8 +36,9 @@ public class AutoShoot extends Command implements CommandPathPiece {
         this.m_drivetrain = drivetrain;
         this.isHub = isHub;
         this.timeToRun = timeToRun;
-        PID = new ProfiledPIDController(10, 0, .5, new Constraints(10, 8));
+        PID = new ProfiledPIDController(5, 0, .5, new Constraints(8, 7));
         PID.enableContinuousInput(-Math.PI, Math.PI);
+        PID.setTolerance(Math.toRadians(3));
         addRequirements(this.m_shooter, m_feeder, m_hopper);
     }
 
@@ -47,11 +48,6 @@ public class AutoShoot extends Command implements CommandPathPiece {
         m_feeder.setOff();
         m_hopper.setOff();
         PID.reset(m_drivetrain.getGyroRadians());
-        if (isHub) {
-            m_shooter.setMode(Mode.HUB);
-        } else {
-            m_shooter.setMode(Mode.PASS);
-        }
 
         this.endTime = System.currentTimeMillis() + timeToRun;
         m_intake.setAgitateMode(true);
@@ -63,16 +59,31 @@ public class AutoShoot extends Command implements CommandPathPiece {
         int hoodAngle = (int) SmartDashboard.getNumber("Hood Pulse Request", 1430);
         SmartDashboard.putString("Curve Point",
                 m_drivetrain.getDistanceToVirtualHub() + "," + shooterRPS + "," + hoodAngle);
-        m_shooter.setManualRPS(shooterRPS);
-        m_shooter.setHoodAngle(hoodAngle);
-        if (m_shooter.atSetPoint()) {
-            m_hopper.setOn();
-            m_feeder.setOn();
-        }
-        if (m_shooter.getMode() != Mode.MANUAL && m_shooter.getMode() != Mode.OFF) {
+        //m_shooter.setManualRPS(shooterRPS);
+        //m_shooter.setHoodAngle(hoodAngle);
+        if (m_shooter.getMode() != Mode.MANUAL) {
             double result = PID.calculate(m_drivetrain.getGyroRadians(), getAngleToTarget());
             m_drivetrain.rotateWithPrivilege(result, 2);
         }
+        if (Math.abs(PID.getPositionError()) < Math.toRadians(5)) {
+            if (m_shooter.atSetPoint() && m_shooter.getMode() != Mode.OFF) {
+                m_hopper.setOn();
+                m_feeder.setOn();
+            }
+            if (isHub) {
+                m_shooter.setMode(Mode.HUB);
+            } else {
+                m_shooter.setMode(Mode.PASS);
+            }
+        }
+        if (Math.abs(PID.getPositionError()) < Math.toRadians(3)) {
+            m_drivetrain.setLockedMode(true);
+        } else {
+            m_drivetrain.setLockedMode(false);
+        }
+        
+        SmartDashboard.putNumber("Angle to Target", getAngleToTarget());
+        SmartDashboard.putNumber("Gyro Angle", m_drivetrain.getGyroRadians());
     }
 
     @Override
@@ -86,6 +97,7 @@ public class AutoShoot extends Command implements CommandPathPiece {
         m_shooter.stop();
         m_hopper.setOff();
         m_intake.setAgitateMode(false);
+        m_drivetrain.setLockedMode(false);
     }
 
     public double getAngleToTarget() {
@@ -99,6 +111,6 @@ public class AutoShoot extends Command implements CommandPathPiece {
         } else {
             target = current;
         }
-        return (Util.angleBetweenPoses(target, current));
+        return (Util.angleBetweenPoses(current, target));
     }
 }

@@ -32,7 +32,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intake = new TalonFX(MechanismConstants.kIntakeMotorID, "rio");
     private final TalonFX m_intakePivot = new TalonFX(MechanismConstants.kIntakePivotID, "rio");
     private final PositionVoltage upPositionRequest = new PositionVoltage(-.01);
-    private final PositionVoltage downPositionRequest = new PositionVoltage(-.29);
+    private final PositionVoltage downPositionRequest = new PositionVoltage(-.31);
     private final PositionVoltage agitatePositionRequest = new PositionVoltage(-.29).withSlot(2);
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
@@ -46,7 +46,7 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putNumber("Intake RPS Request", 0);
 
         var intakeSlot0Config = new Slot0Configs();
-        intakeSlot0Config.kS = IntakeConstants.kS_Intake;
+        intakeSlot0Config.kS = IntakeConstants.kV_Intake;
         intakeSlot0Config.kP = IntakeConstants.kP_Intake;
         intakeSlot0Config.kI = IntakeConstants.kI_Intake;
         intakeSlot0Config.kD = IntakeConstants.kD_Intake;
