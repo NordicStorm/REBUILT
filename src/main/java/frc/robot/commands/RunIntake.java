@@ -18,7 +18,7 @@ public class RunIntake extends Command implements CommandPathPiece{
     @Override
     public void initialize() {
        if (runIntake && m_intake.isClear()) {
-            m_intake.setRPM(3500);
+            m_intake.setRPM(4000);
         } else {
             m_intake.stop();
         }

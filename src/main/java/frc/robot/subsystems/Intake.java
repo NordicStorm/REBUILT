@@ -32,7 +32,7 @@ public class Intake extends SubsystemBase {
     private final TalonFX m_intake = new TalonFX(MechanismConstants.kIntakeMotorID, "rio");
     private final TalonFX m_intakePivot = new TalonFX(MechanismConstants.kIntakePivotID, "rio");
     private final PositionVoltage upPositionRequest = new PositionVoltage(-.01);
-    private final PositionVoltage downPositionRequest = new PositionVoltage(-.31);
+    private final PositionVoltage downPositionRequest = new PositionVoltage(-.345);
     private final PositionVoltage agitatePositionRequest = new PositionVoltage(-.29).withSlot(2);
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
@@ -95,7 +95,7 @@ public class Intake extends SubsystemBase {
                 .withCurrentLimits(
                         new CurrentLimitsConfigs()
                                 .withStatorCurrentLimit(Amps.of(80))
-                                .withSupplyCurrentLimit(Amps.of(30))
+                                .withSupplyCurrentLimit(Amps.of(40))
                                 .withStatorCurrentLimitEnable(true)
                                 .withSupplyCurrentLimitEnable(true))
                 .withSlot0(intakePivotSlot0Config)

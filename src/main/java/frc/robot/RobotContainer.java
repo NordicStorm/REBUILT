@@ -112,13 +112,23 @@ public class RobotContainer {
         // drivetrain.setControl(brake)));
         m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.resetGyro()));
 
-        m_driverController.leftBumper().onTrue(new MoveIntake(m_intake , false).andThen(new RunIntake(m_intake, true)));
+        m_driverController.leftBumper().onTrue(new MoveIntake(m_intake, false).andThen(new RunIntake(m_intake, true)));
         m_driverController.leftBumper().onFalse(new RunIntake(m_intake, false));
-        m_driverController.rightBumper().onTrue(new
-         RunIntake(m_intake, false).andThen(new MoveIntake(m_intake, true)));
-        m_driverController.a().onTrue(new InstantCommand(() -> m_shooter.setHoodAngle((int) SmartDashboard.getNumber("Hood Pulse Request", 1430))));
+        m_driverController.rightBumper().onTrue(new RunIntake(m_intake, false).andThen(new MoveIntake(m_intake, true)));
+        // m_driverController.a().onTrue(new InstantCommand(() ->
+        // m_shooter.setHoodAngle((int) SmartDashboard.getNumber("Hood Pulse Request",
+        // 1430))));
 
-        m_driverController.rightTrigger().whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, true, 0));
-        m_driverController.leftTrigger().whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, false, 0));
+        m_driverController.rightTrigger()
+                .whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, true, 0));
+        m_driverController.leftTrigger()
+                .whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, false, 0));
+    }
+
+    public Command getAutonomousCommand() {
+        if (m_autos == null) {
+            m_autos = new FullAuto(drivetrain, m_shooter, m_feeder, m_hopper, m_intake);
+        }
+        return m_autos;
     }
 }

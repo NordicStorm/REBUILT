@@ -11,6 +11,7 @@ import com.revrobotics.servohub.ServoChannel.ChannelId;
 import com.revrobotics.servohub.config.ServoChannelConfig;
 import com.revrobotics.servohub.config.ServoHubConfig;
 
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -34,6 +35,9 @@ public class Shooter extends SubsystemBase {
     private final ServoHubConfig m_servoHubConfig = new ServoHubConfig();
     private final ServoChannel m_leftHoodServo = m_ServoHub.getServoChannel(ChannelId.kChannelId3);
     private final ServoChannel m_rightHoodServo = m_ServoHub.getServoChannel(ChannelId.kChannelId4);
+
+    private final Servo m_rightServo = new Servo(0);
+    private final Servo m_leftServo = new Servo(1);
 
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
 
@@ -121,13 +125,16 @@ public class Shooter extends SubsystemBase {
         currentMode = Mode.OFF;
     }
 
-    public void setHoodAngle(int pulseWidth) {
+    /*public void setHoodAngle(int pulseWidth) {
         m_hoodServoPulseWidth = (int) Util.clamp(pulseWidth, 1100, 1650);
         m_leftHoodServo.setPulseWidth(m_hoodServoPulseWidth);
         m_rightHoodServo.setPulseWidth(m_hoodServoPulseWidth);
-    }
+        //m_rightServo.setPulseTimeMicroseconds(m_hoodServoPulseWidth);
+        //m_leftServo.setPulseTimeMicroseconds(m_hoodServoPulseWidth);
+    }*/
 
     public boolean atSetPoint() {
+
         return Math.abs(m_shooterLeft.getVelocity().getValueAsDouble() - m_speed) < 1 || m_speed == 0; // TODO: Adjust
                                                                                                        // threshold as
         // needed
@@ -171,7 +178,7 @@ public class Shooter extends SubsystemBase {
         }
 
         setShooterRPS(m_speed);
-        setHoodAngle(m_hoodServoPulseWidth);
+        //setHoodAngle(m_hoodServoPulseWidth);
 
         SmartDashboard.putNumber("Recieved number", m_hoodServoPulseWidth);
         SmartDashboard.putNumber("Shooter Velocity", m_shooterLeft.getVelocity().getValueAsDouble());
