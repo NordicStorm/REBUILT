@@ -24,6 +24,11 @@ public class PathPieceWrapper extends Command implements CommandPathPiece {
     }
 
     @Override
+    public final void initialize() {
+        command.initialize();
+    }
+
+    @Override
     public final void execute() {
         command.execute();
     }

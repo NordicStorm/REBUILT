@@ -11,6 +11,7 @@ import com.revrobotics.servohub.ServoChannel.ChannelId;
 import com.revrobotics.servohub.config.ServoChannelConfig;
 import com.revrobotics.servohub.config.ServoHubConfig;
 
+import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,8 +37,8 @@ public class Shooter extends SubsystemBase {
     private final ServoChannel m_leftHoodServo = m_ServoHub.getServoChannel(ChannelId.kChannelId3);
     private final ServoChannel m_rightHoodServo = m_ServoHub.getServoChannel(ChannelId.kChannelId4);
 
-    private final Servo m_rightServo = new Servo(0);
-    private final Servo m_leftServo = new Servo(1);
+    private final PWM m_rightServo = new PWM(0);
+    private final PWM m_leftServo = new PWM(1);
 
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
 
@@ -126,12 +127,12 @@ public class Shooter extends SubsystemBase {
     }
 
     /*public void setHoodAngle(int pulseWidth) {
-        m_hoodServoPulseWidth = (int) Util.clamp(pulseWidth, 1100, 1650);
-        m_leftHoodServo.setPulseWidth(m_hoodServoPulseWidth);
-        m_rightHoodServo.setPulseWidth(m_hoodServoPulseWidth);
-        //m_rightServo.setPulseTimeMicroseconds(m_hoodServoPulseWidth);
-        //m_leftServo.setPulseTimeMicroseconds(m_hoodServoPulseWidth);
-    }*/
+        m_hoodServoPulseWidth = (int) Util.clamp(pulseWidth, 1000, 1650);
+        //m_leftHoodServo.setPulseWidth(m_hoodServoPulseWidth);
+        //m_rightHoodServo.setPulseWidth(m_hoodServoPulseWidth);
+        m_rightServo.setPulseTimeMicroseconds(m_hoodServoPulseWidth);
+        m_leftServo.setPulseTimeMicroseconds(m_hoodServoPulseWidth);
+    } */
 
     public boolean atSetPoint() {
 
@@ -154,7 +155,7 @@ public class Shooter extends SubsystemBase {
 
     private double getPassRPSFromDistance(double distance) {
         double x = distance;
-        double result = -0.430*x*x + -1.963*x + -19.258; // CURVE:passRPS,03:41,04/04
+        double result = -0.860*x*x + -3.925*x + -38.516; // CURVE:passRPS,09:55,04/07
         return result;
     }
 
@@ -183,8 +184,7 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("Recieved number", m_hoodServoPulseWidth);
         SmartDashboard.putNumber("Shooter Velocity", m_shooterLeft.getVelocity().getValueAsDouble());
         SmartDashboard.putNumber("Shooting Value", m_speed);
-        SmartDashboard.putNumber("Right Hood Pulse Width", m_rightHoodServo.getPulseWidth());
-        SmartDashboard.putNumber("Left Hood Pulse Width", m_leftHoodServo.getPulseWidth());
+        SmartDashboard.putNumber("Hood Pulse Width", m_rightHoodServo.getPulseWidth());
         SmartDashboard.putNumber("Requested PID", m_shooterLeft.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Distance to Hub", RobotContainer.drivetrain.getDistanceToVirtualHub());
         SmartDashboard.putNumber("Servo Hub Voltage", m_ServoHub.getDeviceVoltage());

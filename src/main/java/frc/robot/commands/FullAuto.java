@@ -55,16 +55,18 @@ public class FullAuto extends SequentialCommandGroup {
         boolean isRight = chooser.getSelected().equals("Right");
 
         DriveTrainConfig config = RobotContainer.drivetrain.getConfig().makeClone();
-        config.maxVelocity = 1;
-        config.maxAcceleration = 2;
+        config.maxVelocity = 2;
+        config.maxAcceleration = 3;
         config.maxCentripetalAcceleration = 11;
         config.maxAngularAcceleration = 8;
         config.maxAnglularVelocity = 12;
         double angleAwayFromWall;
+        double angleTowardsWall;
         double angleTowardsFuel;
 
         if (isBlue) {
             angleAwayFromWall = 0;
+            angleTowardsWall = 180;
             if (isLeft) {
                 angleTowardsFuel = -90;
             } else {
@@ -72,6 +74,7 @@ public class FullAuto extends SequentialCommandGroup {
             }
         } else {
             angleAwayFromWall = 180;
+            angleTowardsWall = 0;
             if (isLeft) {
                 angleTowardsFuel = 90;
             } else {
@@ -79,17 +82,18 @@ public class FullAuto extends SequentialCommandGroup {
             }
         }
         if (isCenter) {
-            drivetrain.resetRotation(Rotation2d.fromDegrees(angleAwayFromWall));
+            drivetrain.resetRotation(Rotation2d.fromDegrees(angleTowardsWall));
 
             MultiPartPath pathB = new MultiPartPath(RobotContainer.drivetrain, config, null);
-            pathB.resetPosition(1.623, 3.973);
-            pathB.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
-            pathB.addSequentialCommand(new SetShooter(shooter, Mode.OFF)); // nomove
+            pathB.resetPosition(3.767, 4.034);
+            // pathB.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake,
+            // drivetrain, true, 2000)); // nomove
+            // pathB.addSequentialCommand(new SetShooter(shooter, Mode.OFF)); // nomove
             pathB.addWaypoint(1.804, 4.761);
             pathB.addParallelCommand(new MoveIntake(intake, false));
             pathB.addWaypoint(1.950, 5.318);
             pathB.addWaypoint(1.804, 6.033);
-            pathB.addParallelCommand(new RunIntake(intake, true));
+            pathB.addParallelCommand(new RunIntake(intake, true, true));
             pathB.addWaypoint(0.593, 5.961);
             pathB.addParallelCommand(new SetShooter(shooter, Mode.HUB));
             pathB.addWaypoint(1.926, 5.852);
@@ -108,38 +112,41 @@ public class FullAuto extends SequentialCommandGroup {
             drivetrain.resetRotation(Rotation2d.fromDegrees(angleTowardsFuel));
 
             MultiPartPath pathA = new MultiPartPath(RobotContainer.drivetrain, config, null);
-            pathA.resetPosition(4.688, 7.4);
+            pathA.resetPosition(4.688, 7.000);
             pathA.setHeading(angleTowardsFuel);
-            pathA.addWaypoint(5.658, 7.4);
+            pathA.addWaypoint(5.658, 7.000);
             pathA.addParallelCommand(new MoveIntake(intake, false));
-            pathA.addWaypoint(7.754, 7.221);
-            pathA.addParallelCommand(new RunIntake(intake, true));
-            pathA.addWaypoint(7.778, 4.967);
-            pathA.addWaypoint(7.136, 4.919);
+            pathA.changeMaxVelocity(1);
+            pathA.addWaypoint(7.524, 7.172);
+            pathA.addSequentialCommand(new RunIntake(intake, true, true), 1);// nomove
+            pathA.setHeadingFollowMovement(0);
+            pathA.addWaypoint(7.730, 4.494);
+            pathA.addWaypoint(7.039, 4.700);
             pathA.addWaypoint(6.457, 5.185);
-            pathA.addParallelCommand(new RunIntake(intake, false));
+            pathA.changeMaxVelocity(2);
+            pathA.addSequentialCommand(new RunIntake(intake, false, true), 1); //nomove
             pathA.setHeading(angleAwayFromWall);
-            pathA.addWaypoint(5.852, 7.4);
-            pathA.addWaypoint(4.688, 7.4);
-            pathA.addParallelCommand(new SetShooter(shooter, Mode.HUB));
-            pathA.addWaypoint(3.271, 7.4);
-            pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
+            pathA.addWaypoint(5.852, 7.000);
+            pathA.addWaypoint(4.688, 7.000);
+            pathA.addWaypoint(2.241, 7);
+            pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 5000)); // nomove
             pathA.addSequentialCommand(new SetShooter(shooter, Mode.OFF)); // nomove
             pathA.setHeading(angleAwayFromWall);
-            pathA.addWaypoint(4.725, 7.4);
-            pathA.addParallelCommand(new RunIntake(intake, true));
-            pathA.addWaypoint(6.324, 7.4);
-            pathA.setHeading(angleTowardsFuel);
-            pathA.addWaypoint(7.415, 7.4);
-            pathA.addWaypoint(7.584, 5.403);
+            pathA.changeMaxVelocity(1);
+            pathA.addWaypoint(4.725, 7.000);
+            pathA.addSequentialCommand(new RunIntake(intake, true, true),1); //nomove
+            pathA.setHeadingFollowMovement(0);
+            pathA.addWaypoint(6.179, 6.906);
+            pathA.addWaypoint(7.875, 6.239);
+            pathA.addWaypoint(7.766, 4.216);
             pathA.addWaypoint(6.457, 5.185);
-            pathA.addParallelCommand(new RunIntake(intake, false));
+            pathA.changeMaxVelocity(2);
+            pathA.addSequentialCommand(new RunIntake(intake, false, true),1); //nomove
             pathA.setHeading(angleAwayFromWall);
-            pathA.addWaypoint(5.852, 7.4);
-            pathA.addWaypoint(4.652, 7.4);
-            pathA.addParallelCommand(new SetShooter(shooter, Mode.HUB));
-            pathA.addWaypoint(3.271, 7.4);
-            pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 2000)); // nomove
+            pathA.addWaypoint(5.852, 7.000);
+            pathA.addWaypoint(4.652, 7.000);
+            pathA.addWaypoint(2.277, 7.000);
+            pathA.addSequentialCommand(new AutoShoot(shooter, feeder, hopper, intake, drivetrain, true, 4000)); // nomove
             pathA.addSequentialCommand(new SetShooter(shooter, Mode.OFF)); // nomove
             pathA.addStop();
 

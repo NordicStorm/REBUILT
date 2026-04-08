@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -27,7 +28,8 @@ public class AutoShoot extends Command implements CommandPathPiece {
     private long endTime;
     private ProfiledPIDController PID;
 
-    public AutoShoot(Shooter shooter, Feeder feeder, Hopper hopper, Intake intake, CommandSwerveDrivetrain drivetrain, boolean isHub,
+    public AutoShoot(Shooter shooter, Feeder feeder, Hopper hopper, Intake intake, CommandSwerveDrivetrain drivetrain,
+            boolean isHub,
             long timeToRun) {
         this.m_feeder = feeder;
         this.m_shooter = shooter;
@@ -59,13 +61,15 @@ public class AutoShoot extends Command implements CommandPathPiece {
         int hoodAngle = (int) SmartDashboard.getNumber("Hood Pulse Request", 1430);
         SmartDashboard.putString("Curve Point",
                 m_drivetrain.getDistanceToVirtualHub() + "," + shooterRPS + "," + hoodAngle);
-        //m_shooter.setManualRPS(shooterRPS);
-        //m_shooter.setHoodAngle(hoodAngle);
+        SmartDashboard.putNumber("PID Position Error", PID.getPositionError());
+        // m_shooter.setManualRPS(shooterRPS);
+        // m_shooter.setHoodAngle(hoodAngle);
         if (m_shooter.getMode() != Mode.MANUAL) {
             double result = PID.calculate(m_drivetrain.getGyroRadians(), getAngleToTarget());
             m_drivetrain.rotateWithPrivilege(result, 2);
         }
-        if (Math.abs(PID.getPositionError()) < Math.toRadians(5)) {
+        double goalMinDistance = MathUtil.inputModulus(PID.getGoal().position - m_drivetrain.getGyroRadians(), -Math.PI, Math.PI);
+        if (Math.abs(goalMinDistance) <= Math.toRadians(5)) {
             if (m_shooter.atSetPoint() && m_shooter.getMode() != Mode.OFF) {
                 m_hopper.setOn();
                 m_feeder.setOn();
@@ -76,12 +80,12 @@ public class AutoShoot extends Command implements CommandPathPiece {
                 m_shooter.setMode(Mode.PASS);
             }
         }
-        if (Math.abs(PID.getPositionError()) < Math.toRadians(3)) {
+        if (Math.abs(goalMinDistance) <= Math.toRadians(3)) {
             m_drivetrain.setLockedMode(true);
         } else {
             m_drivetrain.setLockedMode(false);
         }
-        
+
         SmartDashboard.putNumber("Angle to Target", getAngleToTarget());
         SmartDashboard.putNumber("Gyro Angle", m_drivetrain.getGyroRadians());
     }

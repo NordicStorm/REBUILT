@@ -10,6 +10,7 @@ import frc.robot.commands.FullAuto;
 import frc.robot.commands.MoveIntake;
 import frc.robot.commands.OperatorControl;
 import frc.robot.commands.RunIntake;
+import frc.robot.commands.paths.MultiPartPath;
 import frc.robot.commands.AutoShoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -88,6 +89,7 @@ public class RobotContainer {
         configureBindings();
         SmartDashboard.putBoolean("Is auto initialized?", false);
         SmartDashboard.putData("Set Auto", new InstantCommand(() -> {
+            MultiPartPath.preloadClasses();
             m_autos = new FullAuto(drivetrain, m_shooter, m_feeder, m_hopper, m_intake);
             SmartDashboard.putBoolean("Is auto initialized?", m_autos.isInitialized);
         }).ignoringDisable(true));
@@ -111,10 +113,17 @@ public class RobotContainer {
         // m_driverController.a().onTrue(drivetrain.runOnce(() ->
         // drivetrain.setControl(brake)));
         m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.resetGyro()));
+        m_driverController.x()
+                .onTrue(new InstantCommand(() -> OperatorControl.isFastMode = !OperatorControl.isFastMode));
 
-        m_driverController.leftBumper().onTrue(new MoveIntake(m_intake, false).andThen(new RunIntake(m_intake, true)));
-        m_driverController.leftBumper().onFalse(new RunIntake(m_intake, false));
-        m_driverController.rightBumper().onTrue(new RunIntake(m_intake, false).andThen(new MoveIntake(m_intake, true)));
+        m_driverController.b().onTrue(new RunIntake(m_intake, true, false));
+        m_driverController.b().onFalse(new RunIntake(m_intake, false, false));
+
+        m_driverController.leftBumper()
+                .onTrue(new MoveIntake(m_intake, false).andThen(new RunIntake(m_intake, true, true)));
+        m_driverController.leftBumper().onFalse(new RunIntake(m_intake, false, true));
+        m_driverController.rightBumper()
+                .onTrue(new RunIntake(m_intake, false, true).andThen(new MoveIntake(m_intake, true)));
         // m_driverController.a().onTrue(new InstantCommand(() ->
         // m_shooter.setHoodAngle((int) SmartDashboard.getNumber("Hood Pulse Request",
         // 1430))));

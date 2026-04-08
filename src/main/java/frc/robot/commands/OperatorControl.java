@@ -16,6 +16,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class OperatorControl extends Command {
     private DriveTrainConfig config;
     private CommandSwerveDrivetrain driveTrain;
+    public static boolean isFastMode = false;
 
     public OperatorControl(CommandSwerveDrivetrain driveTrain) {
         this.config = driveTrain.getConfig();
@@ -32,8 +33,8 @@ public class OperatorControl extends Command {
         double sideways = -controller.getLeftX();
         double rot = -controller.getRightX();
 
-        double throttle = 0.5;
-        throttle = Util.map(throttle, 1, -1, 0.1, 1);
+        double throttle = isFastMode ? .75 : 0.5;;;;;;;;;;
+        //throttle = Util.map(throttle, 1, -1, 0.1, 1);
 
         // throttle= config.maxVelocity;
 

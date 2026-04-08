@@ -41,6 +41,7 @@ public class Intake extends SubsystemBase {
     private boolean setIntakeUp = true;
     private boolean agitate = false;
     private long agitateStartTime = 0;
+    private long atHighCurrentSince = System.currentTimeMillis();
 
     public Intake() {
         SmartDashboard.putNumber("Intake RPS Request", 0);
@@ -86,7 +87,7 @@ public class Intake extends SubsystemBase {
         intakePivotSlot2Config.kD = IntakeConstants.kD_Agitate;
         intakePivotSlot2Config.kG = IntakeConstants.kG_Agitate;
         intakePivotSlot2Config.withGravityType(GravityTypeValue.Arm_Cosine);
-        intakePivotSlot2Config.withGravityArmPositionOffset(.25);    
+        intakePivotSlot2Config.withGravityArmPositionOffset(.25);
 
         m_intakePivotConfig
                 .withMotorOutput(
@@ -170,12 +171,23 @@ public class Intake extends SubsystemBase {
         }
     }
 
+    public boolean isStalled() {
+        return System.currentTimeMillis() - atHighCurrentSince > 750;
+    }
+
     @Override
     public void periodic() {
-        setIntakeRPM(m_speed);
+        if (this.isStalled() && false) {
+            setIntakeRPM(-2000);
+        } else if (agitate) {
+            setIntakeRPM(1500);
+        }
+        else {
+            setIntakeRPM(m_speed);
+        }
         if (agitate && m_speed == 0) {
             long elapsedTime = System.currentTimeMillis() - agitateStartTime;
-            if (elapsedTime < 2500) {
+            if (elapsedTime < 2000) {
             } else {
                 // Switch between forward and reverse every 1.5 seconds
                 if ((elapsedTime / 1500) % 2 == 0) {
@@ -188,6 +200,10 @@ public class Intake extends SubsystemBase {
             }
         } else {
             setIntakePivotPosition(setIntakeUp);
+        }
+
+        if (m_intake.getSupplyCurrent().getValueAsDouble() < 50) {
+            atHighCurrentSince = System.currentTimeMillis();
         }
         SmartDashboard.putNumber("Intake Position Request", setIntakeUp ? 0 : -.3);
         SmartDashboard.putNumber("Intake Pivot Position", getIntakePivotLocation());
