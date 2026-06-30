@@ -50,7 +50,8 @@ public class Shooter extends SubsystemBase {
         OFF,
         HUB,
         MANUAL,
-        PASS
+        PASS,
+        DEMO
     }
 
     //

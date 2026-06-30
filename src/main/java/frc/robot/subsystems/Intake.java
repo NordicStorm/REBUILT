@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Amps;
 
+import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -60,10 +61,12 @@ public class Intake extends SubsystemBase {
                 .withCurrentLimits(
                         new CurrentLimitsConfigs()
                                 .withStatorCurrentLimit(Amps.of(90))
-                                .withSupplyCurrentLimit(60)
+                                .withSupplyCurrentLimit(40)
                                 .withStatorCurrentLimitEnable(true)
                                 .withSupplyCurrentLimitEnable(true))
-                .withSlot0(intakeSlot0Config);
+                .withSlot0(intakeSlot0Config)
+                .withClosedLoopRamps(new ClosedLoopRampsConfigs()
+                    .withVoltageClosedLoopRampPeriod(.25));
 
         m_intake.getConfigurator().apply(m_intakeConfig);
 
@@ -181,8 +184,7 @@ public class Intake extends SubsystemBase {
             setIntakeRPM(-2000);
         } else if (agitate) {
             setIntakeRPM(1500);
-        }
-        else {
+        } else {
             setIntakeRPM(m_speed);
         }
         if (agitate && m_speed == 0) {
@@ -207,6 +209,7 @@ public class Intake extends SubsystemBase {
         }
         SmartDashboard.putNumber("Intake Position Request", setIntakeUp ? 0 : -.3);
         SmartDashboard.putNumber("Intake Pivot Position", getIntakePivotLocation());
+        SmartDashboard.putNumber("Intake Velocity", m_intake.getVelocity().getValueAsDouble());
     }
 
     public void setAgitateMode(boolean agitate) {

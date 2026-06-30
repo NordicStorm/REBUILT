@@ -33,7 +33,7 @@ public class OperatorControl extends Command {
         double sideways = -controller.getLeftX();
         double rot = -controller.getRightX();
 
-        double throttle = isFastMode ? .75 : 0.5;;;;;;;;;;
+        double throttle = isFastMode ? .8 : 0.6;;;;;;;;;;
         //throttle = Util.map(throttle, 1, -1, 0.1, 1);
 
         // throttle= config.maxVelocity;

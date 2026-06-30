@@ -10,6 +10,7 @@ import frc.robot.commands.FullAuto;
 import frc.robot.commands.MoveIntake;
 import frc.robot.commands.OperatorControl;
 import frc.robot.commands.RunIntake;
+import frc.robot.commands.Unjam;
 import frc.robot.commands.paths.MultiPartPath;
 import frc.robot.commands.AutoShoot;
 import frc.robot.generated.TunerConstants;
@@ -54,6 +55,7 @@ public class RobotContainer {
     private final Intake m_intake = new Intake();
     private final Hopper m_hopper = new Hopper();
     private FullAuto m_autos;
+    private PhotonVision camera = new PhotonVision();
 
     private final PhotonVision aprilTagCam = new PhotonVision();
     public static double shootingSpeed = .5;
@@ -88,14 +90,20 @@ public class RobotContainer {
         FullAuto.putToDashboard();
         configureBindings();
         SmartDashboard.putBoolean("Is auto initialized?", false);
+        double hubX = SmartDashboard.getNumber("hubX", 4);
+        double hubY = SmartDashboard.getNumber("hubY", 3.5);
+        SmartDashboard.putNumber("hubX", hubX);
+        SmartDashboard.putNumber("hubY", hubY);
         SmartDashboard.putData("Set Auto", new InstantCommand(() -> {
             MultiPartPath.preloadClasses();
-            m_autos = new FullAuto(drivetrain, m_shooter, m_feeder, m_hopper, m_intake);
+            m_autos = new FullAuto(drivetrain, m_shooter, m_feeder, m_hopper, m_intake, camera);
             SmartDashboard.putBoolean("Is auto initialized?", m_autos.isInitialized);
         }).ignoringDisable(true));
         isBlue = DriverStation.getAlliance().get() == Alliance.Blue;
         if (isBlue) {
-            hubPosition = new Pose2d(4.628, 8.069263 / 2, Rotation2d.kZero);
+            // hubPosition = new Pose2d(4.628, 8.069263 / 2, Rotation2d.kZero);
+            // hubPosition = new Pose2d(3.5, 4.15, Rotation2d.kZero);
+            hubPosition = new Pose2d(hubX, hubY, Rotation2d.kZero);
             topPassingTarget = new Pose2d(2.871, 6.01, Rotation2d.kZero);
             bottomPassingTarget = new Pose2d(2.871, 2.059, Rotation2d.kZero);
             AllianceAngleRad = 0;
@@ -119,6 +127,8 @@ public class RobotContainer {
         m_driverController.b().onTrue(new RunIntake(m_intake, true, false));
         m_driverController.b().onFalse(new RunIntake(m_intake, false, false));
 
+        m_driverController.y().whileTrue(new Unjam(m_intake, m_hopper, m_feeder));
+
         m_driverController.leftBumper()
                 .onTrue(new MoveIntake(m_intake, false).andThen(new RunIntake(m_intake, true, true)));
         m_driverController.leftBumper().onFalse(new RunIntake(m_intake, false, true));
@@ -129,14 +139,14 @@ public class RobotContainer {
         // 1430))));
 
         m_driverController.rightTrigger()
-                .whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, true, 0));
+                .whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, true, 0, camera));
         m_driverController.leftTrigger()
-                .whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, false, 0));
+                .whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, false, 0, camera));
     }
 
     public Command getAutonomousCommand() {
         if (m_autos == null) {
-            m_autos = new FullAuto(drivetrain, m_shooter, m_feeder, m_hopper, m_intake);
+            m_autos = new FullAuto(drivetrain, m_shooter, m_feeder, m_hopper, m_intake, camera);
         }
         return m_autos;
     }

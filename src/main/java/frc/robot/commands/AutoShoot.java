@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import org.photonvision.targeting.PhotonTrackedTarget;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -15,6 +17,7 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.Mode;
 import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.PhotonVision;
 
 public class AutoShoot extends Command implements CommandPathPiece {
 
@@ -26,11 +29,13 @@ public class AutoShoot extends Command implements CommandPathPiece {
     private boolean isHub;
     private long timeToRun;
     private long endTime;
+    private boolean isDemoMode = false;
     private ProfiledPIDController PID;
+    private PhotonVision camera;
 
     public AutoShoot(Shooter shooter, Feeder feeder, Hopper hopper, Intake intake, CommandSwerveDrivetrain drivetrain,
             boolean isHub,
-            long timeToRun) {
+            long timeToRun, PhotonVision camera) {
         this.m_feeder = feeder;
         this.m_shooter = shooter;
         this.m_hopper = hopper;
@@ -38,6 +43,9 @@ public class AutoShoot extends Command implements CommandPathPiece {
         this.m_drivetrain = drivetrain;
         this.isHub = isHub;
         this.timeToRun = timeToRun;
+        this.camera = camera;
+        m_feeder.setForward();
+        m_hopper.setForward();
         PID = new ProfiledPIDController(5, 0, .5, new Constraints(8, 7));
         PID.enableContinuousInput(-Math.PI, Math.PI);
         PID.setTolerance(Math.toRadians(3));
@@ -62,9 +70,19 @@ public class AutoShoot extends Command implements CommandPathPiece {
         SmartDashboard.putString("Curve Point",
                 m_drivetrain.getDistanceToVirtualHub() + "," + shooterRPS + "," + hoodAngle);
         SmartDashboard.putNumber("PID Position Error", PID.getPositionError());
+        isDemoMode = SmartDashboard.getBoolean("Demo Mode", isDemoMode);
         // m_shooter.setManualRPS(shooterRPS);
         // m_shooter.setHoodAngle(hoodAngle);
         if (m_shooter.getMode() != Mode.MANUAL) {
+            if (isDemoMode) {
+                m_shooter.setMode(Mode.DEMO);
+        } else {
+             if (isHub) {
+                  m_shooter.setMode(Mode.HUB);
+                 } else {
+                  m_shooter.setMode(Mode.PASS);
+                }
+        }
             double result = PID.calculate(m_drivetrain.getGyroRadians(), getAngleToTarget());
             m_drivetrain.rotateWithPrivilege(result, 2);
         }
@@ -74,11 +92,7 @@ public class AutoShoot extends Command implements CommandPathPiece {
                 m_hopper.setOn();
                 m_feeder.setOn();
             }
-            if (isHub) {
-                m_shooter.setMode(Mode.HUB);
-            } else {
-                m_shooter.setMode(Mode.PASS);
-            }
+           
         }
         if (Math.abs(goalMinDistance) <= Math.toRadians(3)) {
             m_drivetrain.setLockedMode(true);
@@ -112,6 +126,8 @@ public class AutoShoot extends Command implements CommandPathPiece {
             target = RobotContainer.hubPosition;
         } else if (m_shooter.getMode() == Mode.PASS) {
             target = m_drivetrain.getTargetPassPoint();
+        } else if (m_shooter.getMode() == Mode.DEMO) {
+            target = null;
         } else {
             target = current;
         }

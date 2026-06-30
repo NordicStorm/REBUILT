@@ -22,14 +22,18 @@ public class MoveIntake extends Command implements CommandPathPiece {
             m_intake.setIntakeUp();
             m_intake.setRPM(1000);
         } else {
-            //m_intake.setRPM(1000);
+            m_intake.setRPM(-1000);
             m_intake.setIntakeDown();
         }
     }
 
     @Override
     public boolean isFinished() {
-        m_intake.stop();
         return m_intake.atSetPoint();
+    }
+
+    @Override
+    public void end(boolean isFinished) {
+        m_intake.stop();
     }
 }

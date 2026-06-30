@@ -24,6 +24,7 @@ public class Hopper extends SubsystemBase {
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
 
     private boolean isFeeding = false;
+    private boolean isForward = true;
 
     public Hopper() {
         SmartDashboard.putNumber("Hopper RPS Request", -15);
@@ -43,9 +44,11 @@ public class Hopper extends SubsystemBase {
     }
 
     private void setHopper(boolean isFeeding) {
-        if (isFeeding) {
+        if (isFeeding && isForward) {
             double velocity = SmartDashboard.getNumber("Hopper RPS Request", -15);
             m_hopper.setControl(velocityRequest.withVelocity(velocity));
+        } else if (isFeeding && !isForward) {
+            m_hopper.setControl(velocityRequest.withVelocity(10));
         } else {
             m_hopper.set(0);
         }
@@ -53,6 +56,14 @@ public class Hopper extends SubsystemBase {
 
     public void setOn() {
         isFeeding = true;
+    }
+
+    public void setForward() {
+        this.isForward = true;
+    }
+
+    public void setBackward() {
+        this.isForward = false;
     }
 
     public void setOff() {

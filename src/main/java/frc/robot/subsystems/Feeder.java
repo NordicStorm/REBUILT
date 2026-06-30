@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -15,8 +16,11 @@ import frc.robot.Constants.FeederConstants;
 public class Feeder extends SubsystemBase {
 
     private boolean isFeeding = false;
+    private boolean isForward = true;
 
-    private final TalonFXConfiguration m_feederConfig = new TalonFXConfiguration();
+    private final TalonFXConfiguration m_feederConfig = new TalonFXConfiguration()
+            .withClosedLoopRamps(new ClosedLoopRampsConfigs()
+                    .withVoltageClosedLoopRampPeriod(.25));
     public final TalonFX m_feeder = new TalonFX(Constants.MechanismConstants.kFeederMotorID, "rio");
     final VelocityVoltage velocityRequest = new VelocityVoltage(0);
     final DutyCycleOut stopMotorRequest = new DutyCycleOut(0);
@@ -39,9 +43,11 @@ public class Feeder extends SubsystemBase {
     }
 
     private void setFeeder(boolean isFeeding) {
-        if (isFeeding) {
+        if (isFeeding && isForward) {
             double velocity = SmartDashboard.getNumber("Feeder RPS Request", 40);
             m_feeder.setControl(velocityRequest.withVelocity(velocity));
+        } else if (isFeeding && !isForward) {
+            m_feeder.setControl(velocityRequest.withVelocity(-20));
         } else {
             m_feeder.set(0);
         }
@@ -53,6 +59,14 @@ public class Feeder extends SubsystemBase {
 
     public void setOff() {
         isFeeding = false;
+    }
+
+    public void setForward() {
+        this.isForward = true;
+    }
+
+    public void setBackward() {
+        this.isForward = false;
     }
 
     @Override
