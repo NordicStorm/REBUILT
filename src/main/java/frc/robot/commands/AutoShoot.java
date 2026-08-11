@@ -64,10 +64,10 @@ public class AutoShoot extends Command implements CommandPathPiece {
         SmartDashboard.putNumber("PID Position Error", PID.getPositionError());
         // m_shooter.setManualRPS(shooterRPS);
         // m_shooter.setHoodAngle(hoodAngle);
-        if (m_shooter.getMode() != Mode.MANUAL) {
+        /*if (m_shooter.getMode() != Mode.MANUAL) {
             double result = PID.calculate(m_drivetrain.getGyroRadians(), getAngleToTarget());
             m_drivetrain.rotateWithPrivilege(result, 2);
-        }
+        }*/
         double goalMinDistance = MathUtil.inputModulus(PID.getGoal().position - m_drivetrain.getGyroRadians(), -Math.PI, Math.PI);
         if (Math.abs(goalMinDistance) <= Math.toRadians(5)) {
             if (m_shooter.atSetPoint() && m_shooter.getMode() != Mode.OFF) {

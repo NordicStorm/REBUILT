@@ -12,6 +12,7 @@ import frc.robot.commands.OperatorControl;
 import frc.robot.commands.RunIntake;
 import frc.robot.commands.paths.MultiPartPath;
 import frc.robot.commands.AutoShoot;
+import frc.robot.commands.DemoShoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Feeder;
@@ -128,10 +129,13 @@ public class RobotContainer {
         // m_shooter.setHoodAngle((int) SmartDashboard.getNumber("Hood Pulse Request",
         // 1430))));
 
+        /*m_driverController.rightTrigger()
+                .whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, true, 0));*/
         m_driverController.rightTrigger()
-                .whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, true, 0));
+                .whileTrue(new DemoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, aprilTagCam));
         m_driverController.leftTrigger()
                 .whileTrue(new AutoShoot(m_shooter, m_feeder, m_hopper, m_intake, drivetrain, false, 0));
+        
     }
 
     public Command getAutonomousCommand() {

@@ -5,6 +5,7 @@ import java.util.List;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -30,6 +31,12 @@ public class PhotonVision extends SubsystemBase {
 
     public List<PhotonPipelineResult> getTargets() {
         return fuelCamera.getAllUnreadResults();
+    }
+
+    public List<PhotonTrackedTarget> getTags() {
+        PhotonPipelineResult result = fuelCamera.getLatestResult();
+        return result.getTargets();
+
     }
 
     @Override

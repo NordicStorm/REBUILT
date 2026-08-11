@@ -50,7 +50,8 @@ public class Shooter extends SubsystemBase {
         OFF,
         HUB,
         MANUAL,
-        PASS
+        PASS,
+        DEMO
     }
 
     //
@@ -58,7 +59,7 @@ public class Shooter extends SubsystemBase {
     //
 
     public Shooter() {
-        SmartDashboard.putNumber("Shooter RPS Request", -55);
+        SmartDashboard.putNumber("Shooter RPS Request", 0);
         SmartDashboard.putNumber("Hood Pulse Request", 1430);
 
         var shooterSlot0Configs = new Slot0Configs();
@@ -176,10 +177,11 @@ public class Shooter extends SubsystemBase {
 
         } else if (currentMode == Mode.OFF || currentMode == null) {
             m_speed = 0;
+        } else if (currentMode == Mode.DEMO) {
+            m_speed = 0;
         }
 
         setShooterRPS(m_speed);
-        //setHoodAngle(m_hoodServoPulseWidth);
 
         SmartDashboard.putNumber("Recieved number", m_hoodServoPulseWidth);
         SmartDashboard.putNumber("Shooter Velocity", m_shooterLeft.getVelocity().getValueAsDouble());
@@ -188,5 +190,6 @@ public class Shooter extends SubsystemBase {
         SmartDashboard.putNumber("Requested PID", m_shooterLeft.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Distance to Hub", RobotContainer.drivetrain.getDistanceToVirtualHub());
         SmartDashboard.putNumber("Servo Hub Voltage", m_ServoHub.getDeviceVoltage());
+        SmartDashboard.putString("Shooter State", currentMode.toString());
     }
 }
